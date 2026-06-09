@@ -1,0 +1,110 @@
+.vis-time-axis .vis-grid.vis-odd {
+  background: #f5f5f5;
+}
+
+.vis-time-axis .vis-text.vis-major {
+  font-weight: bold;
+}
+
+.vis-labelset .vis-label .vis-inner {
+  width: 100%;
+}
+
+.vis-item.check-in.vis-dot {
+  margin-top: 10px;
+  border-color: #fa8072;
+  cursor: pointer;
+  border-width: 6px;
+  border-radius: 6px;
+}
+
+.vis-item.vis-point.check-in .vis-item-content {
+  display: none;
+}
+
+.vis-item.vis-dot.late-for-work {
+  border-color: red;
+}
+
+.vis-item.vis-dot.working {
+  border-color: blue;
+}
+
+.vis-item.vis-dot.arrive-early {
+  border-color: goldenrod;
+}
+
+.vis-item.vis-dot.leave-late {
+  border-color: green;
+}
+
+.group-label-container {
+  height: 56px;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  flex-flow: row wrap;
+}
+
+.group-content-container {
+  display: flex;
+  align-items: center;
+  flex-flow: row wrap;
+}
+
+.group-stt-label {
+  /* max-width: 130px; */
+  padding-left: 10px;
+  /* flex: 1; */
+}
+
+.group-name-label {
+  padding-left: 20px;
+  /* text-align: center; */
+  flex: 1;
+}
+
+.group-working-hours-label {
+  width: 70px;
+  text-align: center;
+}
+
+.group-meal-label {
+  width: 45px;
+  text-align: center;
+}
+
+.check-in-location {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 65%;
+  padding: 5px 0px 5px 0px;
+  cursor: pointer;
+}
+
+.check-in-location .vis-tooltip {
+  right: 0;
+  max-width: 400px;
+  word-wrap: break-word;
+}
+
+.check-in-location:hover .vis-tooltip {
+  visibility: visible;
+}
+
+.leaflet-container {
+  width: 100%;
+  height: calc(100% - 5px);
+}
+
+.vis-label {
+  .vis-inner {
+    .group-out-site {
+      margin: -5px 0px -5px -5px;
+      padding: 5px;
+      background-color: #D9F7BE;
+      border-bottom: 1px solid #bfbfbf;
+    }
+  }
+}

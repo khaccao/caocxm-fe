@@ -1,0 +1,17 @@
+{
+  "New": "New",
+  "Edit": "Edit",
+  "Name": "Name",
+  "Hours": "Hours",
+  "Team": "Team",
+  "Project": "Project",
+  "Start time": "Start time",
+  "End time": "End time",
+  "Please input name!": "Please input name!",
+  "Please input start time!": "Please input start time!",
+  "Please input end time!": "Please input end time!",
+  "Cancel": "Cancel",
+  "Submit": "Submit",
+  "Remove": "Remove",
+  "pagingTotal": "{{range1}} - {{range2}} out of {{total}} records"
+}

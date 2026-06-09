@@ -1,0 +1,17 @@
+.tablecell {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+.checkboxcell {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.underlineText {
+  color: rgba(24, 144, 255, 1);
+  text-decoration: underline;
+}
+.selectedRow {
+  background-color: rgba(238, 251, 255, 1);
+}

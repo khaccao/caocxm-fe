@@ -1,0 +1,158 @@
+{
+  "Choose project": "Chọn dự án",
+  "Find project name": "Tìm tên dự án",
+  "Remove": "Xóa",
+  "createProject": {
+    "button": "Tạo dự án",
+    "cancel": "Hủy",
+    "steps": {
+      "generalInfo": "Thông tin chung",
+      "projectDoc": "Tài liệu dự án",
+      "projectMem": "Thành viên dự án"
+    },
+    "projectInfo": {
+      "copyFromProject": "Copy từ dự án",
+      "title": "Thông tin dự án",
+      "projectName": "Tên dự án",
+      "projectNamePlaceholder": "Nhập tên dự án",
+      "requireProjectName": "Vui lòng nhập tên dự án",
+      "projectCode": "Mã dự án",
+      "projectCodePlaceholder": "Nhập mã dự án",
+      "requireProjectCode": "Vui lòng nhập mã dự án",
+      "projectStartDate": "Ngày bắt đầu",
+      "projectStartDatePlaceholder": "Nhập ngày bắt đầu dự án",
+      "requireProjectStartDate": "Vui lòng nhập ngày bắt đầu dự án",
+      "projectEndDate": "Ngày kết thúc",
+      "projectEndDatePlaceholder": "Nhập ngày kết thúc dự án",
+      "requireProjectEndDate": "Vui lòng nhập ngày kết thúc dự án",
+      "city": "Thành phố",
+      "requireCity": "Vui lòng nhập thành phố",
+      "district": "Quận/Huyện",
+      "requireDistrict": "Vui lòng nhập quận/huyện",
+      "address": "Địa chỉ",
+      "addressPlaceholder": "Nhập địa chỉ dự án",
+      "requireAddress": "Vui lòng nhập địa chỉ",
+      "description": "Mô tả",
+      "projectAvatar": "Ảnh đại diện dự án",
+      "requiredProjectAvatar": "Vui lòng chọn ảnh đại diện dự án"
+    },
+    "Warehouse": {
+      "title": "Chọn kho từ kế toán",
+      "name": "Tên kho"
+    },
+    "investorInfo": {
+      "title": "Thông tin chủ đầu tư",
+      "investorName": "Tên chủ đầu tư",
+      "investorNamePlaceholder": "Nhập tên chủ đầu tư",
+      "requireInvestorName": "Vui lòng nhập tên của nhà đầu tư",
+      "investorPhone": "Số điện thoại",
+      "investorPhonePlaceholder": "Nhập số điện thoại",
+      "requireInvestorPhone": "Vui lòng nhập số điện thoại của nhà đầu tư",
+      "investorEmail": "Email",
+      "investorEmailPlaceholder": "Nhập email",
+      "requireInvestorEmail": "Vui lòng nhập email của nhà đầu tư",
+      "emailNotValid": "Email không hợp lệ"
+    },
+    "addDocument": "Thêm tài liệu",
+    "projectMember": {
+      "title": "Thành viên",
+      "addMember": "Thêm thành viên",
+      "table": {
+        "name": "Tên",
+        "role": "Vai trò"
+      },
+      "modal": {
+        "memberList": "Danh sách thành viên",
+        "searchMemberPlaceholder": "Tìm thành viên",
+        "roleList": "Vai trò",
+        "cancel": "Hủy",
+        "add": "Thêm"
+      }
+    },
+    "back": "Quay lại",
+    "next": "Tiếp theo",
+    "finish": "Khởi tạo",
+    "createProjectSuccessfully": "Tạo dự án thành công!",
+    "startDate": "Ngày bắt đầu",
+    "address": "Địa chỉ",
+    "owner": "Chủ đầu tư",
+    "phone": "Số điện thoại",
+    "email": "Email",
+    "backToProjectList": "Quay lại danh sách dự án",
+    "goToBiddingContractPage": "Dự thầu - Hợp đồng"
+  },
+  "project": {
+    "status": {
+      "bidding": "Đang dự thầu",
+      "completed": "Hoàn thành",
+      "executing": "Đang thi công"
+    }
+  },
+  "projectMenuDropdown": {
+    "delete": "Xóa dự án",
+    "deleteTitle": "Xóa dự án",
+    "deleteContent": "Bạn có chắc chắn muốn xóa dự án",
+    "yes": "Đồng ý",
+    "no": "Hủy"
+  },
+  "projectSetting": {
+    "tabs": {
+      "generalInfo": "Thông tin chung",
+      "projectMember": "Thành viên",
+      "jobCategory": "Danh mục công việc",
+      "phase": "Giai đoạn",
+      "category": "Hạng mục"
+    },
+    "save": "Lưu",
+    "projectMember": {
+      "addMember": "Thêm thành viên",
+      "findMember": "Tìm thành viên",
+      "table": {
+        "memberId": "Mã nhân sự",
+        "memberName": "Họ tên",
+        "role": "Vai trò",
+        "team": "Tổ đội",
+        "note": "Ghi chú",
+        "action": {
+          "deleteTitle": "Xóa thành viên này",
+          "deleteDescription": "Bạn có chắc muốn xóa thành viên {{mem}}?",
+          "okText": "Ok",
+          "cancelText": "Hủy",
+          "deleteSuccessTitle": "Xóa thành viên thành công",
+          "deleteSuccessDescrption": "Đã xóa {{mem}} ra khỏi dự án"
+        }
+      },
+      "modalUpdateMember": {
+        "title": "Chỉnh sửa thành viên",
+        "role": "Vai trò",
+        "note": "Ghi chú",
+        "notePlaceholder": "Nhập ghi chú",
+        "okText": "Cập nhật",
+        "cancelText": "Hủy"
+      },
+      "modalAddMember": {
+        "title": "Thêm thành viên dự án",
+        "memberList": "Danh sách thành viên",
+        "searchMemberPlaceholder": "Tìm thành viên",
+        "roleList": "Vai trò",
+        "cancel": "Hủy",
+        "add": "Thêm"
+      }
+    }
+  },
+  "Status": "Trạng thái",
+  "requiredStatus": "Vui lòng nhập trạng thái",
+  "Save": "Lưu",
+  "ProjectPhoto": "Ảnh đại diện",
+  "pagingTotal": "{{range1}} - {{range2}} trong {{total}} bản ghi",
+  "Edit": "Sửa",
+  "Remove member": "Xóa thành viên",
+  "Please input roles": "Vui lòng nhập vai trò",
+  "startDate": "Ngày bắt đầu: ",
+  "endDate": "Ngày kết thúc: ",
+  "Edit info": "Cài đặt dự án",
+  "Notification": "Thông báo",
+  "unknown": "Không biết",
+  "View": "Xem chi tiết",
+  "Selected members": "Đã chọn: {{num}}"
+}

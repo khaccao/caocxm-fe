@@ -1,0 +1,123 @@
+.wrapperTimeKeepingMonth {
+  .selected-row {
+    background: #e6f7ff !important;
+    position: relative;
+  }
+  .selected-row:hover {
+    background-color: #e6f7ff !important;
+  }
+  .ant-table-container .ant-table-tbody > tr.ant-table-row {
+    border-radius: 8px !important; /* Thay đổi giá trị theo nhu cầu của bạn */
+    overflow: hidden; /* Đảm bảo rằng border-radius không bị ảnh hưởng bởi phần tử con */
+  }
+
+  .ant-table-container .ant-table-tbody > tr.ant-table-row:first-child {
+    border-top-left-radius: 8px !important; /* Áp dụng cho góc trên bên trái của hàng đầu tiên */
+    border-top-right-radius: 8px !important; /* Áp dụng cho góc trên bên phải của hàng đầu tiên */
+  }
+
+  .ant-table-container .ant-table-tbody > tr.ant-table-row:last-child {
+    border-bottom-left-radius: 8px !important; /* Áp dụng cho góc dưới bên trái của hàng cuối cùng */
+    border-bottom-right-radius: 8px !important; /* Áp dụng cho góc dưới bên phải của hàng cuối cùng */
+  }
+  .scrollable-table-container {
+    overflow-x: auto;
+  }
+  .wrapperTable {
+    display: flex;
+    overflow: hidden; /* Ẩn bất kỳ nội dung nào bị tràn ra ngoài container */
+    flex-wrap: nowrap;
+
+    .ant-table-container .ant-table-tbody {
+      overflow-x: hidden !important; /* Hide horizontal scrollbar */
+    }
+
+    @media only screen and (max-width: 1200px) {
+      .ant-table-container .ant-table-body {
+        max-height: 60vh !important;
+      }
+    }
+
+    @media only screen and (max-width: 992px) {
+      /* CSS cho máy tính bảng ngang hoặc thiết bị nhỏ */
+      .ant-table-container .ant-table-body {
+        max-height: 55vh !important;
+      }
+    }
+    .ant-table-container .ant-table-cell {
+      border-inline-end: 1px solid #f1eeee !important ;
+    }
+    .ant-table-container .ant-table-thead > tr > th:nth-child(2),
+    .ant-table-container .ant-table-thead > tr > th:nth-child(3) {
+      background: rgb(59, 70, 235);
+    }
+    .ant-table-container .ant-table-thead > tr > th:nth-child(4),
+    .ant-table-container .ant-table-thead > tr > th:nth-child(5),
+    .ant-table-container .ant-table-thead > tr > th:nth-child(6) {
+      background: rgb(230, 230, 58);
+    }
+    .ant-table-container .ant-table-thead > tr > th:nth-child(7),
+    .ant-table-container .ant-table-thead > tr > th:nth-child(8) {
+      background: rgb(4, 248, 4);
+    }
+    .ant-table-container .ant-table-summary .ant-table-cell {
+      text-align: center;
+      font-weight: 600;
+    }
+  }
+  .editable-cell-value-wrap {
+    padding: 5px 12px;
+    cursor: pointer;
+    height: 30px;
+  }
+  .editable-row:hover .editable-cell-value-wrap {
+    padding: 4px 11px;
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+  }
+  .sumary_cell {
+    padding: 16px; /* Add padding */
+    border-bottom: 2px solid red; /* Bottom border */
+  }
+}
+.modal-timekeeping {
+  .ant-table-container .ant-table-cell {
+    border-inline-end: 1px solid #f1eeee !important ;
+  }
+  .ant-table-container .ant-table-thead > tr > th:nth-child(2),
+  .ant-table-container .ant-table-thead > tr > th:nth-child(3) {
+    background: rgb(59, 70, 235);
+  }
+  .ant-table-container .ant-table-thead > tr > th:nth-child(4),
+  .ant-table-container .ant-table-thead > tr > th:nth-child(5),
+  .ant-table-container .ant-table-thead > tr > th:nth-child(6) {
+    background: rgb(230, 230, 58);
+  }
+  .ant-table-container .ant-table-thead > tr > th:nth-child(7),
+  .ant-table-container .ant-table-thead > tr > th:nth-child(8) {
+    background: rgb(4, 248, 4);
+  }
+  .ant-table-container .ant-table-summary .ant-table-cell {
+    text-align: center;
+    font-weight: 600;
+  }
+  .editable-row:hover .editable-cell-value-wrap {
+    padding: 4px 11px;
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+  }
+  .editable-cell-value-wrap {
+    padding: 5px 12px;
+    cursor: pointer;
+    height: 20px;
+  }
+  .editable-row:hover .editable-cell-value-wrap {
+    padding: 4px 11px;
+    border: 1px solid #d9d9d9;
+    border-radius: 10px;
+  }
+  .sumary_cell {
+    padding: 16px; /* Add padding */
+    border-bottom: 2px solid red; /* Bottom border */
+  }
+}

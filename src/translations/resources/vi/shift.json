@@ -1,0 +1,19 @@
+{
+  "New": "Thêm mới",
+  "Edit": "Sửa thông tin",
+  "Name": "Tên ca",
+  "Hours": "Giờ làm việc",
+  "Team": "Bộ phận",
+  "Project": "Dự án",
+  "Start time": "Giờ bắt đầu",
+  "End time": "Giờ kết thúc",
+  "Please input name!": "Vui lòng nhập tên ca!",
+  "Please input start time!": "Vui lòng nhập giờ bắt đầu!",
+  "Please input end time!": "Vui lòng nhập giờ kết thúc!",
+  "Cancel": "Hủy",
+  "Submit": "Lưu",
+  "Remove": "Xóa",
+  "pagingTotal": "{{range1}} - {{range2}} trong {{total}} bản ghi",
+  "Notification": "Thông báo",
+  "confirmRemove": "Bạn có chắc chắn xóa ca làm việc {{name}}?"
+}

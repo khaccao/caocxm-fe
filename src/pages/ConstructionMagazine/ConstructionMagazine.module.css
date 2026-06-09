@@ -1,0 +1,203 @@
+.header {
+    background-color: white;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.headerContent {
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+.searchInput {
+    width: 200px;
+}
+
+.datapicker {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.datePicker {
+    flex-shrink: 0;
+}
+
+.filterButton,
+.downloadButton,
+.ellipsisButton {
+    flex-shrink: 0;
+}
+
+.filterButton {
+    color: rgba(191, 191, 191, 1);
+    border-radius: 50px;
+}
+
+.tableContent {
+    background-color: aliceblue;
+}
+
+.tableForm {
+    background-color: white;
+    margin: 5px;
+    padding-left: 5px;
+   
+}
+
+.tableHeader {
+    display: grid;
+    grid-template-columns: 4fr 1.6fr 1.1fr 1.2fr 1fr;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+
+.headerContainer {
+    height: 60px;
+    display: flex;
+}
+
+.headerContainer h3 {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.headerTitle {
+    width: 53%;
+    text-align: left;
+}
+
+.headerName {
+    font-size: 14px;
+    width: 10%;
+    text-align: left;
+}
+
+.headerUnit {
+    font-size: 14px;
+    width: 10%;
+    text-align: left;
+}
+
+.headerQuantity {
+    font-size: 14px;
+    width: 10%;
+    text-align: left;
+}
+
+.headerDot {
+    font-size: 14px;
+    width: 10%;
+}
+
+.tableTenct {
+    font-size: 14px;
+}
+
+.toggleButton {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    margin-bottom: 10px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    padding: 0;
+}
+
+.toggleIcon {
+    font-size: 14px;
+    margin-right: 8px;
+    color: #000;
+}
+
+.toggleText {
+    margin: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    color: #000;
+}
+
+.greenIcon {
+    font-size: 14px;
+    margin-right: 8px;
+    color: chartreuse;
+}
+
+.toggleText1 {
+    margin: 10px;
+    font-size: 14px;
+    font-weight: 700;
+    color: #000;
+}
+
+.greenIcon1 {
+    margin-left: 20px;
+    font-size: 14px;
+    margin-right: 8px;
+    color: chartreuse;
+}
+
+.toggleIcon1 {
+    margin-left: 20px;
+    font-size: 14px;
+    margin-right: 8px;
+    color: #000;
+}
+
+.tableContainer {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 80px);
+    /* Sử dụng toàn bộ chiều cao của viewport */
+}
+
+.scrollableContent {
+    flex: 1;
+    overflow: hidden;
+}
+
+.scrollableTable {
+    height: calc(100vh - 200px);
+    /* Điều chỉnh giá trị này tùy theo chiều cao của header và các phần tử khác */
+    overflow-y: auto;
+    padding-right: 16px;
+    /* Thêm padding để tránh thanh cuộn che mất nội dung */
+}
+
+
+/* Tùy chỉnh thanh cuộn */
+
+.scrollableTable::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollableTable::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.scrollableTable::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.scrollableTable::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+.categoryBorder {
+    border-bottom: 1px solid #e0e0e0;
+    /* Màu xám nhạt và độ dày 1px */
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.headerOnly tbody {
+    display: none;
+}

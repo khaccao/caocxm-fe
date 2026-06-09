@@ -1,0 +1,16 @@
+{
+  "Import to Depot": "Import to Deport",
+  "Apply": "Apply",
+  "Cancel": "Cancel",
+  "Summary": "Summary",
+  "Depot In-Out Summary": "Depot In-Out Summary",
+  "Unit Code": "Unit Code",
+  "From Date": "From Date",
+  "To Date": "To Date",
+  "Depot Code": "Depot Code",
+  "Debit Account": "Debit Account",
+  "Credit Account": "Credit Account",
+  "Data is based on approved (Released) documents.": "Data is based on approved (Released) documents.",
+  "Data is based on unapproved (Unreleased) documents.":"Data is based on unapproved (Unreleased) documents.",
+  "Data is based on all documents, both approved (Released) and unapproved (Unreleased).":"Data is based on all documents, both approved (Released) and unapproved (Unreleased)."
+}

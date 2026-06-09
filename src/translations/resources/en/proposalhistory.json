@@ -1,0 +1,7 @@
+{
+    "proposer": "Proposer",
+    "requestDate": "Date of request for import",
+    "status": "Proposal process",
+    "approved": "Number of materials approved",
+    "approve": "Approve"
+}

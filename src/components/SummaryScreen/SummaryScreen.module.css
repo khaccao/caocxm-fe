@@ -1,0 +1,21 @@
+.table {
+  margin: 10px;
+  border-radius: 8px;
+  border: 1px;}
+.tablecell {
+  font-size: 14px;
+  font-weight: 400;
+
+}
+.header-bold {
+  font-weight: 700;
+}
+
+.form_depot_wrapper {
+  margin: 10px;
+  border-radius: 8px;
+  border: 1px;
+  background-color: white;
+  padding: 20px;
+  height: 28vh;
+}

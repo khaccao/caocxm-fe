@@ -1,0 +1,58 @@
+.mainContainer {
+  width: 100%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.addDocumentContainer {
+  width: 50%;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 30px;
+  background-color: #FFFFFF;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.buttonContainer {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+  margin-top: 30px;
+}
+
+.buttonWithIcon {
+  height: 40px;
+  display: flex;
+  border-radius: 50px;
+  justify-content: center;
+  align-items: center;
+  font-size: medium;
+}
+
+@media only screen and (max-width: 767px) {
+  .addDocumentContainer {
+    width: 100%;
+  }
+}
+
+@media only screen and (max-width: 450px) {
+  // .buttonContainer {
+  //   justify-content: space-between;
+  // }
+  .buttonContainer {
+    flex-direction: column;
+    align-self: start;
+    margin-top: 0px;
+  }
+  .buttonWithIcon {
+    width: 100%;
+  }
+}

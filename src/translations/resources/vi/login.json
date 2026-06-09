@@ -1,0 +1,15 @@
+{
+    "Username": "Tên đăng nhập",
+    "Require username": "Nhập tên đăng nhập của bạn",
+    "Password": "Mật khẩu",
+    "Require password": "Nhập mật khẩu của bạn",
+    "Remember": "Lưu đăng nhập",
+    "Forget password": "Bạn quên mật khẩu?",
+    "Forget password Notify": "Liên lạc với Ban giám đốc để được cấp lại mật khẩu!",
+    "Login": "Đăng nhập",
+    "invalid_username_or_password": "Tên đăng nhập hoặc mật khẩu không đúng. Vui lòng kiểm tra lại.",
+    "User is blocked": "Tài khoản đăng nhập đã bị tạm khóa. Vui lòng nhập mã xác thực để tiếp tục đăng nhập.",
+    "The login name is not exists.": "Tên đăng nhập không đúng. Vui lòng kiểm tra lại.",
+    "Password wrong.": "Mật khẩu không đúng. Vui lòng kiểm tra lại.",
+    "Require captcha": "Nhập mã xác thực"
+}

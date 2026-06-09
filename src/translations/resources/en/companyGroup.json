@@ -1,0 +1,14 @@
+{
+    "name": "Name",
+    "Add": "Add",
+    "Delete": "Delete",
+    "Transfer": "Transfer",
+    "Fix":"Fix",
+    "Personnel transfer": "Personnel transfer",
+    "Department Update": "Department Update",
+    "Select department/team": "Select department/team",
+    "Please select a group!": "Please select a group!",
+    "Cancel": "Cancel",
+    "Save": "Save",
+    "The department code has existed!": "The department code {{code}} has existed!"
+}

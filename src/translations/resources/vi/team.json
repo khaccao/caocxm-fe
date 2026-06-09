@@ -1,0 +1,86 @@
+{
+  "teamManage": {
+    "header": {
+      "addNewTeam": "Thêm tổ đội",
+      "findTeam": "Tìm kiếm tổ đội"
+    },
+    "addTeamModal": {
+      "title": "Thêm mới tổ đội",
+      "okText": "Thêm",
+      "cancelText": "Hủy"
+    },
+    "table": {
+      "teamName": "Tên tổ đội",
+      "description": "Mô tả",
+      "note": "Ghi chú",
+      "action": {
+        "deleteTitle": "Xóa tổ đội",
+        "deleteDescription": "Bạn có muốn xóa tổ đội này",
+        "okText": "Ok",
+        "cancelText": "Hủy",
+        "deleteSuccessTitle": "Xóa tổ đội thành công",
+        "deleteSuccessDescrption": "Đã xóa tổ đội {{team}} ra khỏi dự án"
+      }
+    },
+    "updateTeamModal": {
+      "title": "Chỉnh sửa thông tin tổ đội",
+      "okText": "Cập nhật",
+      "cancelText": "Hủy"
+    },
+    "createUpdateform": {
+      "teamName": "Tên tổ đội",
+      "requireTeamName": "Vui lòng nhập tên tổ đội",
+      "description": "Mô tả",
+      "currentTeamMember": "Các thành viên hiện tại của tổ ({{length}})",
+      "addMember": "Thêm thành viên",
+      "table": {
+        "name": "Tên",
+        "role": "Vai trò",
+        "action": {
+          "deleteTitle": "Xóa thành viên",
+          "deleteDescription": "Bạn có muốn xóa thành viên này?",
+          "okText": "Có",
+          "cancelText": "Không"
+        }
+      },
+      "note": "Ghi chú",
+      "status": "Trạng thái"
+    },
+    "addMemberModal": {
+      "title": "Thêm thành viên",
+      "memberList": "Danh sách thành viên",
+      "roleList": "Vai trò",
+      "okText": "Thêm",
+      "cancelText": "Hủy"
+    },
+    "viewTeamDetail": "Thông tin chi tiết đội"
+  },
+  "Edit": "Sửa",
+  "Remove": "Xóa",
+  "Code": "Mã tổ đội",
+  "Please input code": "Vui lòng nhập mã tổ đội",
+  "pagingTotal": "{{range1}} - {{range2}} trong {{total}} bản ghi",
+  "Notification": "Thông báo",
+  "confirmRemove": "Bạn có chắc chắn muốn xóa tổ đội {{name}}?",
+  "General info": "Thông tin chung",
+  "Members": "Thành viên",
+  "Shift": "Ca làm việc",
+  "Supervisor": "Tổ trưởng",
+  "Cancel": "Hủy",
+  "Save": "Lưu",
+  "Team members": "Tổ viên",
+  "Remove from the team members": "Xóa tổ viên",
+  "Choose member": "Thêm thành viên",
+  "Search": "Tìm kiếm",
+  "Name": "Họ tên",
+  "Phone": "Điện thoại",
+  "Address": "Địa chỉ",
+  "Employee code": "Mã nhân sự",
+  "confirmRemoveMember": "Bạn có chắc chắn muốn xóa tổ viên {{name}}?",
+  "editTeam": "Tổ đội: {{name}}",
+  "Add": "Thêm",
+  "setTeamLead": "{{lead}} hiện đang làm tổ trưởng. Bạn có chắc chắn muốn chuyển cho {{name}} làm tổ trưởng?",
+  "Active": "Hoạt động",
+  "Deactive": "Không hoạt động",
+  "Next": "Tiếp theo"
+}

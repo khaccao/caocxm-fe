@@ -1,0 +1,14 @@
+{
+    "Username": "Username",
+    "Require username": "Require username",
+    "Password": "Password",
+    "Require password": "Require password",
+    "Remember": "Remember",
+    "Forget password": "Forget password?",
+    "Forget password Notify": "Please contact Board of Manager!",
+    "Login": "Login",
+    "invalid_username_or_password": "The username or password is incorrect.",
+    "User is blocked": "User is blocked. Please input the captcha.",
+    "The login name is not exists.": "The login name is not exists.",
+    "Password wrong.": "Password wrong."
+}

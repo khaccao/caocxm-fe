@@ -1,0 +1,49 @@
+.tableContainer {
+  background-color: white;
+  margin: 10px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.headerContainer h3 {
+  margin-left: 20px;
+  font-size: 14px;
+  font-weight: bold;
+}
+.headerContainer {
+  display: grid;
+  grid-template-columns: 10% 49% 15% 30% 15%;
+  width: 100%;
+}
+
+.headerCode {
+  grid-column: 1;
+  text-align: left;
+}
+
+.headerName {
+  grid-column: 2;
+  text-align: left;
+}
+
+.headerUnit {
+  grid-column: 3;
+  text-align: left;
+}
+
+.headerQuantity {
+  grid-column: 4;
+  text-align: left;
+}
+.headerDot {
+  grid-column: 5;
+  text-align: left;
+}
+.underlineText {
+  color: rgba(24, 144, 255, 1);
+  text-decoration: underline;
+}
+.tableDate {
+  font-size: 14px;
+}

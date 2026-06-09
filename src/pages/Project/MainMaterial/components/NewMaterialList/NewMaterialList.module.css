@@ -1,0 +1,145 @@
+.container {
+  width: 1240px;
+  height: 600px;
+  border-radius: 5px;
+}
+
+.formcontainer {
+  margin-left: 20px;
+  width: 1128px;
+  height: 500px;
+  flex-direction: column;
+  align-items: center;
+}
+
+.formtitle {
+  border-radius: 5px;
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+.subsection {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.fadedText {
+  opacity: 0.5;
+  color: #999999;
+}
+
+.labeltext {
+  font-weight: 500;
+  font-size: 14px;
+}
+.labeltext:nth-of-type(1) {
+  font-size: 14px;
+}
+
+.labeltext:nth-of-type(2) {
+  margin-left: 240px;
+  font-size: 14px;
+}
+
+.labeltext:nth-of-type(3) {
+  margin-right: 100px;
+  font-size: 14px;
+}
+
+.inputsection {
+  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.inputwrapper {
+  width: 432px;
+  height: 32px;
+  margin-bottom: 10px;
+}
+
+.inputfield {
+  color: rgba(24, 144, 255, 1);
+  text-decoration: underline;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  width: 432px;
+  height: 28px;
+  font-size: 14px;
+  transition: border-color 0.3s ease; /* Optional: smooth transition */
+}
+
+.inputfield:hover {
+  color: rgba(24, 144, 255, 1);
+}
+
+.selectdatesection {
+  width: 432px;
+  height: 32px;
+  margin-left: 450px;
+  margin-top: -42.5px;
+}
+
+.selectfield {
+  font-size: 14px;
+  width: 432px;
+  height: 32px;
+}
+
+.datewrapper {
+  margin-top: -33px;
+  margin-left: 927px;
+}
+
+.datepicker {
+  width: 432px;
+  height: 32px;
+  border: 1px solid #ccc;
+  border-radius: 1;
+  font-size: 14px;
+  width: 100%;
+}
+
+.buttonsection {
+  margin-top: 300px;
+  display: flex;
+  justify-content: space-between;
+}
+.PrinterOutlined {
+  font-size: 16px;
+  width: 44px;
+  height: 30px;
+  border: 1px solid rgba(217, 217, 217, 1);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 5px;
+  margin-left: 880px;
+}
+.button:first-child {
+  background-color: #ccc;
+  margin-left: 35px;
+}
+.button:last-child {
+  margin-right: 80px;
+}
+.addButton {
+  background-color: rgba(250, 250, 250, 1);
+  border: 1px solid rgba(217, 217, 217, 1);
+  padding: 0;
+  height: 25px;
+  width: 100%;
+}
+.newRow {
+  text-align: center;
+  width: 100%;
+}
+.underlineText {
+  color: rgba(24, 144, 255, 1);
+  text-decoration: underline;
+}
+.boldText {
+  font-weight: bold;
+}

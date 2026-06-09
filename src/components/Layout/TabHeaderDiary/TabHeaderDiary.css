@@ -1,0 +1,37 @@
+.tab-header-diary-container {
+  margin: 0px 0px 0px 0px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  background-color: white;
+}
+
+
+.header-text {
+  color: black;
+  font-weight: bold;
+  margin-right: auto;
+  font-size: 18px;
+}
+
+.tab-header-diary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.date-picker {
+  color: black;
+}
+.confirm-transfer-button {
+  align-content: flex-end ;
+}
+.download-button,
+.ellips-button {
+  background-color: white;
+  color: black;
+  border-color: rgba(24, 144, 255, 1);
+}

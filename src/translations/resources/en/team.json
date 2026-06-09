@@ -1,0 +1,57 @@
+{
+  "teamManage": {
+    "header": {
+      "addNewTeam": "Add new team",
+      "findTeam": "Find team"
+    },
+    "addTeamModal": {
+      "title": "Add new team",
+      "okText": "Add",
+      "cancelText": "Cancel"
+    },
+    "table": {
+      "teamName": "Team",
+      "description": "Description",
+      "note": "Note",
+      "action": {
+        "deleteTitle": "Delete team",
+        "deleteDescription": "Are you sure want to delete this team",
+        "okText": "Confirm",
+        "cancelText": "Cancel",
+        "deleteSuccessTitle": "Delete team successfully",
+        "deleteSuccessDescrption": "Deleted {{team}} out of project"
+      }
+    },
+    "updateTeamModal": {
+      "title": "Update team information",
+      "okText": "Update",
+      "cancelText": "Cancel"
+    },
+    "createUpdateform": {
+      "teamName": "Team",
+      "requireTeamName": "Team name is required",
+      "description": "Description",
+      "currentTeamMember": "Current team member ({{length}})",
+      "addMember": "Add member",
+      "table": {
+        "name": "Name",
+        "role": "Role",
+        "action": {
+          "deleteTitle": "Delete member",
+          "deleteDescription": "Are you sure want to delete this member?",
+          "okText": "Yes",
+          "cancelText": "No"
+        }
+      },
+      "note": "Note"
+    },
+    "addMemberModal": {
+      "title": "Add new member",
+      "memberList": "Member list",
+      "roleList": "Role list",
+      "okText": "Add",
+      "cancelText": "Cancel"
+    }
+  },
+  "viewTeamDetail": "View team detail"
+}

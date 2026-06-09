@@ -1,0 +1,11 @@
+.tableWrapper :global(.ant-table-cell-fix-left),
+.tableWrapper :global(.ant-table-cell-fix-right) {
+  z-index: 20 !important;
+  position: sticky !important;
+}
+
+.tableWrapper :global(.ant-table-row:hover) :global(.ant-table-cell-fix-left),
+.tableWrapper :global(.ant-table-row:hover) :global(.ant-table-cell-fix-right) {
+  z-index: 30 !important;
+  background-color: #ffffff !important;
+}

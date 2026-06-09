@@ -1,0 +1,53 @@
+.ModalPredecessor {
+  min-width: 900px;
+  max-height: 700px;
+}
+.currentTask {
+  display: flex;
+  gap: 10px; /* Add space between the two divs if needed */
+}
+
+.currentTaskName {
+  width: 80%;
+}
+
+.currentTaskDuration {
+  width: 20%;
+  label {
+    min-width: 70px;
+  }
+  .inputField {
+    max-width: 100px;
+  }
+}
+.tableTaskName {
+    max-width: 380px;
+    min-width: 380px;
+  }
+.currentTaskName, .currentTaskDuration {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  label {
+    left: 8px;
+    z-index: 1;
+    pointer-events: none;
+    color: black
+  }
+  .inputField{
+    color: rgba(0, 0, 0, 0.88) !important;
+    margin-left: 8px;
+  }
+}
+.tableHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Optional: Align items vertically */
+  padding: 10px;
+  h5 {
+    margin: 0;
+  }
+  .addRowBtn {
+    margin-left: auto;
+  }
+}

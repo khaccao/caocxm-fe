@@ -1,0 +1,103 @@
+.proposalList {
+  display: flex;
+  gap: 10px;
+  padding-right: 16px;
+}
+
+.proposalDayCard {
+  height: 630px;
+  margin-bottom: 20px;
+  background: -webkit-linear-gradient(top, #c8c8ca 65px, #fdfcfc 40px);
+  border-radius: 20px;
+}
+.proposalDayCardTitle {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.proposalDayCardContent {
+  padding-top: 10px;
+  margin-top: 20px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 560px;
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.proposalCard {
+  margin-bottom: 16px;
+  border-width: 2px;
+  border-style: solid;
+}
+
+.proposalCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  & .project {
+    flex: 1;
+  }
+  & .buttonGroup {
+    display: flex;
+    gap: 2px;
+  }
+}
+
+.proposalCardFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-right: 2px;
+  & .id {
+    flex: 1;
+    text-align: right;
+    margin-right: 2px;
+  }
+  & .section {
+    flex: 1;
+    text-align: right;
+  }
+}
+
+.proposalCardBody {
+  margin-top: 8px;
+  padding: 16px;
+}
+
+.textWhite {
+  color: white;
+}
+
+.orange {
+  border-color: #FFA940;
+  background: linear-gradient(to bottom, #fdfcfb 57px, #FFA940 30px);
+  border-radius: 20px;
+}
+
+.green {
+  border-color: #389E0D;
+  background: linear-gradient(to bottom, #fdfcfb 58px, #389E0D 33px);
+  border-radius: 20px;
+}
+
+.blue {
+  border-color: #1D39C4;
+  background: linear-gradient(to bottom, #fdfcfb 57px, #1D39C4 30px);
+ border-radius: 20px;
+} 
+.red {
+  border-color: #eb1e4b;
+  background: linear-gradient(to bottom, #fdfcfb 57px, #eb1e4b 30px);
+ border-radius: 20px;
+} 
+
+.noBorderButton {
+  border: none ;
+  box-shadow: none ;
+  background: transparent ;
+  padding: 0 ;
+}

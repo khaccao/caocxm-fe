@@ -1,0 +1,149 @@
+@import "../../common/styles.less";
+.ganttWrapper {
+  .ganttLabel {
+    font-size: 14px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    list-style: none !important;
+    color: rgba(0, 0, 0, 0.88) !important;
+    font-weight: 600 !important;
+    text-align: center !important;
+  }
+  
+  :global(.no-progress) {
+    display: none !important;
+  }
+  :global(.gantt_link_control) {
+    height: 20px !important;
+  }
+  
+  :global(.progress_input_container) {
+    max-width: 60px;
+  }
+  :global(.progress-gantt) {
+    margin: 7px 0;
+    max-height: 15px;
+  }
+  :global(.gantt_task_content) {
+    display: none;
+  }
+  :global(.isCategory) {
+    :global(.gantt_tree_content) {
+      font-weight: bold;
+    }
+    .dateText, .durationText, .progressText {
+      display: none !important;
+    }
+  }
+  :global(.isCategory .gantt_cell:not(:first-child)) {
+    pointer-events: none;
+  }
+  :global(.weekend){
+    background: #F2F4F7;
+  }
+  :global(.gantt_task_row.gantt_selected) {
+    :global(.weekend) {
+      background-color: #fff3a1;
+    }
+    background-color: #fff3a1;
+  }
+  :global(.toDay){
+    border-left: 2px solid #0050B3 !important;
+  }
+  :global(.gantt_task .gantt_task_scale .gantt_scale_cell) {
+    font-size: 14px !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important;
+    list-style: none !important;
+    color: rgba(0, 0, 0, 0.88) !important;
+    font-weight: 600 !important;
+    border-width: 1px;
+    border-style: solid;
+    border-color: #E9EBF0;
+  }
+  :global(.full-progress) {
+    :global(.gantt_task_progress) {
+     background: @complete-color;
+   }
+ }
+ :global(.gantt_task_progress_wrapper) {
+    min-width: 5px !important;
+  }
+  :global(.gantt_task_progress) {
+    min-width: 5px !important;
+    background: @progress-color;
+  }
+  
+  :global(.gantt_tree_content) {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    font-size: 14px;
+    box-sizing: border-box;
+    color: rgba(0, 0, 0, 0.88);
+    word-break: break-word;
+  }
+
+  :global(.timeline_cell) {
+    :global(.gantt_task_row:not(:last-child)) {
+      border: 0px;
+    }
+  }
+  // :global(.gantt_grid_data .gantt_row.gantt_selected), :global(.gantt_grid_data .gantt_row.odd.gantt_selected), :global(.gantt_task_row.gantt_selected) {
+  //   background-color: #fff;
+  // }
+  :global(.gantt_grid_scale .gantt_grid_head_cell) {
+      border-top: none !important;
+      border-right: 1px solid #E9EBF0 !important;
+  }
+  :global(.gantt_grid_data .gantt_cell) {
+    border-right: 1px solid #E9EBF0;
+    color: #454545;
+  }
+  :global(.gantt_row_task){
+    border-bottom: 0px;
+    line-height: 35px !important;
+    :global(.gantt_cell) {
+      border-bottom: 1px solid #ebebeb;
+    }
+    :global(.gantt_cell:not(:first-child)) {
+      display: flex;
+      align-items: center;
+    }
+  }
+  :global(.gantt_tree_content) {
+   white-space: normal;
+  }
+  :global(.gantt_task_line) {
+    background: #BAE7FF;
+    border-radius: 20px;
+    border: none;
+    box-shadow: none;
+  }
+  :global(.gantt_line_wrapper div) {
+    background-color: #B9BEC7 !important;
+  }
+  
+  :global(.gantt_link_arrow_right) {
+    border-left-color: #B9BEC7 !important;
+  }
+  :global(.gantt_link_arrow_left) {
+    border-right-color: #B9BEC7 !important;
+  }
+  :global(.gantt_task_row.gantt_selected .gantt_task_cell) {
+    border-right-color: #E9EBF0;
+}
+:global(.gantt-custom-right-text), :global(.gantt-custom-left-text) {
+  font-weight: 600;
+  font-size: 14px;
+  margin-top: -7px;
+}
+}
+.inputProgress {
+  max-width: 60px !important;
+}
+
+.inputDuration {
+  max-width: 85px !important;
+}
+.exportPDF {
+  // filter: blur(3px);
+  pointer-events: none; /* Vô hiệu hóa mọi tương tác */
+}
+

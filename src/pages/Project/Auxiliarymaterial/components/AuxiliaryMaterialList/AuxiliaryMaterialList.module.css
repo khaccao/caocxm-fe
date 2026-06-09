@@ -1,0 +1,12 @@
+.tablecell {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+.selectedRow {
+  background-color: rgba(238, 251, 255, 1);
+}
+.underlineText {
+  color: rgba(24, 144, 255, 1);
+  text-decoration: underline;
+}

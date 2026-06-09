@@ -1,0 +1,83 @@
+@import "../../../common/styles.less";
+.ColorNote__wraper {
+  position: fixed;
+  width: 450px;
+  height: 130px;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  .headerWrapper {
+    height: 25px;
+    width: 100%;
+    .headerText {
+      font-size: 16px;
+      font-weight: 700;
+      line-height: 14.06px;
+      text-align: left;
+      color: #000000D9;
+    }
+    .btnClose {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+    }
+  }
+  .listItem__wrapper {
+    display: flex !important;
+    align-items: center;
+    padding: 8px 0;
+    margin-top: 10px;
+    justify-content: inherit;
+    .colorBlock {
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+      flex-shrink: 0;
+    }
+    .Plan {
+      background-color: #add8e6;
+    }
+    
+    .AheadOfSchedule {
+      background: linear-gradient(
+        to right, 
+        #9fc9fa 0%,   #9fc9fa 12.5%,  /* light blue */
+        #096DD9 12.5%,  #096DD9 17.5%,  /* blue */
+        #9fc9fa 17.5%,  #9fc9fa 50%,  /* light blue */
+        #096DD9 50%,  #096DD9 55%,  /* blue */
+        #9fc9fa 55%,  #9fc9fa 85%,  /* light blue */
+        #096DD9 85%,  #096DD9 90%,  /* blue */
+        #9fc9fa 90%,  #9fc9fa 100%  /* light blue */
+      );
+    }
+    
+    .BehindSchedule {
+      background: linear-gradient(
+        to right, 
+        #FF7875 0%,   #FF7875 12.5%,  /* light red */
+        #CF1322 12.5%,  #CF1322 17.5%,  /* red */
+        #FF7875 17.5%,  #FF7875 50%,  /* light red */
+        #CF1322 50%,  #CF1322 55%,  /* red */
+        #FF7875 55%,  #FF7875 85%,  /* light red */
+        #CF1322 85%,  #CF1322 90%,  /* red */
+        #FF7875 90%,  #FF7875 100%  /* light red */
+      );
+    }
+    
+    .InProgress {
+      background-color: @progress-color;
+    }
+    
+    .Completed {
+      background-color: @complete-color;
+    }
+    
+    .itemLabel {
+      font-size: 14px;
+    }
+  }
+};

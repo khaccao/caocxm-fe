@@ -1,0 +1,42 @@
+// @media only screen and (max-width: 1200px) {
+//   :global(.ant-table-container .ant-table-body) {
+//     max-height: 60vh !important;
+//   }
+// }
+
+// @media only screen and (max-width: 992px) {
+//   /* CSS cho máy tính bảng ngang hoặc thiết bị nhỏ */
+//   :global(.ant-table-container .ant-table-body) {
+//     max-height: 55vh !important;
+//   }
+// }
+
+:global(.ant-modal-body) {
+  max-height: calc(100vh - 150px); /* Điều chỉnh chiều cao tối đa của nội dung modal */
+  overflow-y: auto; /* Cho phép cuộn nếu nội dung dài hơn kích thước modal */
+  overflow-x: hidden;
+  padding-right: 5px;
+}
+:global(.ant-modal-body::-webkit-scrollbar) {
+  width: 8px; /* Chiều rộng của thanh cuộn */
+}
+
+:global(.ant-modal-body::-webkit-scrollbar-track) {
+  background: #f1f1f1; /* Màu nền của thanh cuộn */
+}
+
+:global(.ant-modal-body::-webkit-scrollbar-thumb) {
+  background-color: #888; /* Màu của thanh cuộn */
+  border-radius: 4px; /* Bo tròn góc của thanh cuộn */
+}
+
+:global(.ant-modal-body::-webkit-scrollbar-thumb:hover) {
+  background: #555; /* Màu của thanh cuộn khi di chuột qua */
+}
+
+:global(.ant-modal-footer) {
+  padding-top: 8px;
+}
+
+@complete-color: #14aeea;
+@progress-color: #fed33b;

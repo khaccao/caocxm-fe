@@ -1,0 +1,42 @@
+.tab-header-diary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 10px;
+  background-color: white;
+}
+.apply-button {
+  margin-right: 10px;
+}
+.download-button {
+  background-color: white;
+  color: black;
+  border-color: rgba(24, 144, 255, 1);
+  margin-right: 10px;
+}
+.ellips-button {
+  background-color: white;
+  color: black;
+  border-color: rgba(24, 144, 255, 1);
+  margin-right: 10px;
+}
+.tablecell {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+}
+.tabheader {
+  background-color: white;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.headerContent {
+  margin-left: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}

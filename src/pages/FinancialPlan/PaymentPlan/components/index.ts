@@ -1,0 +1,1 @@
+export { default as PayrollTable } from '../views/PayrollTable';

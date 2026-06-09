@@ -1,0 +1,142 @@
+.header {
+  background-color: white;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.headerContent {
+  margin-left: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.searchInput {
+  width: 200px;
+}
+
+.datapicker {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.datePicker {
+  flex-shrink: 0;
+}
+
+.filterButton,
+.downloadButton,
+.ellipsisButton {
+  flex-shrink: 0;
+}
+
+.filterButton {
+  color: rgba(191, 191, 191, 1);
+  border-radius: 50px;
+}
+.tableContent {
+  background-color: aliceblue;
+}
+.tableForm {
+  background-color: white;
+  margin: 10px;
+  padding-left: 50px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+.tableHeader {
+  display: grid;
+  grid-template-columns: 4fr 1.6fr 1.1fr 1.2fr 1fr;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.headerContainer {
+  height: 60px;
+  display: flex;
+}
+.headerContainer h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+.headerTitle {
+  width: 50%;
+  text-align: left;
+}
+.headerName {
+  font-size: 14px;
+  width: 10%;
+  text-align: left;
+}
+.headerUnit {
+  font-size: 14px;
+  width: 10%;
+  text-align: left;
+}
+.headerQuantity {
+  font-size: 14px;
+  width: 11%;
+  text-align: left;
+}
+.headerDot {
+  font-size: 14px;
+  width: 10%;
+}
+.tableTenct {
+  font-size: 14px;
+}
+.toggleButton {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif,
+    'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  margin-bottom: 10px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  padding: 0;
+}
+.toggleIcon {
+  font-size: 14px;
+  margin-right: 8px;
+  color: #000;
+}
+.toggleText {
+  margin: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: #000;
+}
+.greenIcon {
+  font-size: 14px;
+  margin-right: 8px;
+  color: chartreuse;
+}
+.toggleText1 {
+  margin: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #000;
+}
+.greenIcon1 {
+  margin-left: 20px;
+  font-size: 14px;
+  margin-right: 8px;
+  color: chartreuse;
+}
+.toggleIcon1 {
+  margin-left: 20px;
+  font-size: 14px;
+  margin-right: 8px;
+  color: #000;
+}
+.notAchieved {
+  color: red;
+  font-weight: bold;
+}
+
+.achieved {
+  color: green;
+  font-weight: bold;
+}

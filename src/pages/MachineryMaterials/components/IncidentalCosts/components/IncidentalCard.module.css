@@ -1,0 +1,213 @@
+.incidentalList {
+  display: flex;
+  gap: 10px;
+  padding: 30px;
+  margin-top: -5px;
+  height: 87%;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.confirmlevel {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.incidentalDayCard {
+  background: -webkit-linear-gradient(top, #dadada 65px, #fdfcfc 40px);
+  border-radius: 20px;
+  min-width: 40%;
+  height: calc(100vh - 120px);
+  padding-top: -5px;
+  flex-grow: 1;
+}
+
+.incidentalDayCardTitle {
+  font-weight: bold;
+  font-size: 16px;
+  height: 20px;
+}
+
+.incidentalDayCardContent {
+  padding-top: 10px;
+  margin-top: 20px;
+  flex: 1;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 0;
+  }
+
+  height: calc(100vh - 200px);
+}
+
+.ant-modal-content {
+  height: 100%;
+  display: flex;
+  overflow: 'hidden';
+}
+
+/* ---------- incidental card ------------------- */
+
+.incidentalCard {
+  overflow: hidden;
+  margin-bottom: 20px;
+  border-width: 2px;
+  border-style: solid;
+  width: 100%;
+  cursor: pointer;
+}
+
+.incidentalCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  & .project {
+    flex: 1;
+    margin-right: 10px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
+  }
+
+  & .buttonGroup {
+    display: flex;
+    padding-top: 2px;
+    gap: 2px;
+  }
+}
+
+.noteText {
+  font-size: x-small;
+  opacity: 0.6;
+}
+
+.incidentalCardBody {
+  margin-top: -10px;
+  padding-bottom: 10px;
+}
+
+.textWhite {
+  color: white;
+}
+
+.textHighlight {
+  color: white;
+  font-size: 18px;
+}
+
+.orange {
+  border-color: #ffa940;
+  background: linear-gradient(to bottom, #fdfcfb 57px, #ffa940 30px);
+  border-radius: 20px;
+}
+
+.blue {
+  border-color: #1d39c4;
+  background: linear-gradient(to bottom, #fdfcfb 55px, #1d39c4 38px);
+  border-radius: 20px;
+}
+
+.red {
+  border-color: #eb1e4b;
+  background: linear-gradient(to bottom, #fdfcfb 57px, #eb1e4b 30px);
+  border-radius: 20px;
+}
+
+.magenta {
+  border-color: #cc6699;
+  background: linear-gradient(to bottom, #fdfcfb 55px, #cc6699 38px);
+  /* Màu nền xám */
+  border-radius: 20px;
+}
+
+.noBorderButton {
+  border: none;
+  box-shadow: none;
+  background: transparent;
+  padding: 0;
+}
+
+.textContent {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+
+.model {
+  width: 100%;
+  height: 370px;
+}
+
+.rowItem {
+  display: flex;
+  align-items: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  height: 30px;
+  padding: 5px;
+}
+
+.truncateText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.fontMedium {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.antModal {
+  width: 85% !important;
+}
+
+.tableWrapper :global(.ant-table-cell-fix-left),
+.tableWrapper :global(.ant-table-cell-fix-right) {
+  z-index: 20 !important;
+  /* position: sticky !important; */
+  height: 100px !important;
+
+}
+
+.tableWrapper :global(.ant-table-row:hover) :global(.ant-table-cell-fix-left),
+.tableWrapper :global(.ant-table-row:hover) :global(.ant-table-cell-fix-right) {
+  z-index: 30 !important;
+  background-color: #ffffff !important;
+}
+
+.tableWrapper .ant-table-tbody>tr>td,
+.tableWrapper .ant-table-thead>tr>th {
+  height: 64px !important;
+
+  font-size: 13px;
+}
+
+.overallTotal {
+  justify-content: flex-end;
+  display: flex;
+  border-top: 1px solid #d9d9d9;
+  z-index: 1000;
+  font-size: 18px;
+  font-weight: 700;
+  width: 100%;
+  padding-right: 10px;
+}
+
+.boldPlaceholder {
+  font-weight: bold !important;
+}

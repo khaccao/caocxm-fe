@@ -1,0 +1,12 @@
+.error-row {
+  background-color: #fbd6d4;
+}
+
+.daily-labor-summary-table {
+  padding: 6px;
+}
+
+.daily-labor-summary-table .ant-table-thead > tr > th {
+  font-weight: bold;
+  margin: auto 0;
+}

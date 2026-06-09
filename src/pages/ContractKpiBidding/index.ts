@@ -1,0 +1,1 @@
+export { ContractKpiBidding } from './ContractKpiBidding';

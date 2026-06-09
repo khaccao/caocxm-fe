@@ -1,0 +1,14 @@
+{
+    "name": "Tên",
+    "Add": "Thêm",
+    "Delete": "Xóa",
+    "Transfer": "Chuyển",
+    "Fix":"Sửa",
+    "Personnel transfer": "Điều chuyển nhân sự",
+    "Department Update": "Cập nhật phòng ban",
+    "Select department/team": "Chọn phòng ban/tổ đội",
+    "Please select a group!": "Vui lòng chọn một nhóm!",
+    "Cancel": "Hủy",
+    "Save": "Lưu",
+    "The department code has existed!": "Mã phòng ban {{code}} đã tồn tại!"
+}

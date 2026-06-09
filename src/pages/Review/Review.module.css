@@ -1,0 +1,118 @@
+.layout {
+  background-color: white;
+  width: 100%;
+  height: calc(100vh - 130px);
+  display: flex;
+  flex-direction: column;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center; /* Căn giữa theo chiều dọc */
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.onerow {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.reviewList {
+  display: flex;
+  height: 100%;
+  padding: 10px;
+}
+
+.fontLarge {
+  font-size: 20px;
+  font-weight: 600
+}
+
+.fontMedium {
+  font-size: 14px;
+  font-weight: 600
+}
+
+.fontSmall {
+  font-size: 12px;
+}
+.fontNormal {
+  font-size: 14px;
+}
+
+.flexRow {
+  display: flex;
+  flex-direction: row;
+}
+
+.flexColumn {
+  display: flex;
+  flex-direction: column;
+}
+
+.rowMessage {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  background: none;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.rowMessageSelected {
+  background: #bfe7ee;
+}
+
+.rowMessage:hover {
+  background: #d9d9d9;
+}
+.rowMessage:hover .buttonGroup{
+  display: flex;
+}
+
+.buttonGroup {
+  display: none;
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding-top: 6px;
+  padding-right: 12px;
+}
+
+.buttons {
+  font-size: 15px;
+} 
+
+.buttons:hover {
+  color: rgb(216, 117, 117);
+} 
+
+.buttonEdit {
+  color: #096798;
+} 
+
+.buttonDelete {
+  color: red;
+} 
+
+.rowComment {
+  margin-top: 5px;
+  margin-bottom: 5px;
+  background: none;
+  flex-grow: 1;
+}
+
+.likeButton {
+  font-size: 30px;
+  color: #14aeea;
+  margin-right: 5px
+}
+
+.likeButton:hover {
+  color: #148fea;
+}

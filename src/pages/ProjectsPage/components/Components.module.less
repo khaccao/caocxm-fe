@@ -1,0 +1,58 @@
+.projectCard {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    & .descriptions {
+       color: #595959;
+       display: flex;
+       flex-direction: column;
+       gap: 5px;
+       padding-block: 5px;
+    }
+    // & .imgInfoContainer {
+    //     cursor: pointer;
+    // }
+    // & .imgContainer {
+    //     cursor: pointer;
+    // }
+    & .infoContainer {
+        display: flex;
+        flex-direction: column;
+        padding: 5px 15px;
+        gap: 5px;
+    }
+    & .statusContainer {
+        width: 100%;
+        display: flex;
+        padding: 10px;
+    }
+    &:hover {
+        transition: all 400ms ease-in-out;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    // cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.buttonLeft {
+    display: flex;
+    gap: 20px;
+}
+
+.imgStyle {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.projectInfoContainer {
+    display: flex;
+    flex-direction: column;
+    width: clamp(300px, 50%, 650px);
+}
+
+@media only screen and (max-width: 576px) {
+    .imgStyle {
+        display: none;
+    }
+}

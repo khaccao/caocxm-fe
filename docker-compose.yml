@@ -1,0 +1,15 @@
+version: "3"
+networks:
+  collective:
+    name: collective
+services:
+  viewer:
+    container_name: viewer
+    image: dockerhub.anybim.vn/nvh_view:dev
+    networks:
+      - collective
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      NODE_ENV: production

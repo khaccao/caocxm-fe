@@ -1,0 +1,12 @@
+{
+  "Team": "Tổ",
+  "table": {
+    "Name": "Tên",
+    "StandardOperation": "Công định mức",
+    "AssignedWork": "Công giao",
+    "ActualWork": "Công thực tế",
+    "LaborSaved": "Số công tiết kiệm được"
+  },
+  "No data available.": "Chưa có dữ liệu.",
+  "Please select a date filter!": "Vui lòng chọn bộ lọc ngày!"
+}

@@ -1,0 +1,1 @@
+export { SalaryOfDepartment as default } from './SalaryDepartment';

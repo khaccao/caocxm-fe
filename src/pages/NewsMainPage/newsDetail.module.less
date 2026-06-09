@@ -1,0 +1,56 @@
+.container {
+    min-height: 100%;
+    max-height: calc(100dvh - 47px);
+    overflow-y: auto;
+    background-color: #fff;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    .wrapper {
+        height: 100%;
+        width: 100%;
+        padding: 1rem 3rem 6rem;
+        .title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #096DD9;
+        }
+        .newsDetail {
+            min-height: 200px;
+            .title {
+                text-transform: uppercase;
+            }
+            .extraInfor {
+                display: flex;
+                gap: 1rem;
+                margin-bottom: 1rem;
+                & > div {
+                    line-height: 14px;
+                    font-size: 13px;
+                    color: #00000093;
+                    font-weight: 500;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px
+                }
+            }
+        }
+        .newsSider {
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            .title {
+                margin: 0;
+                margin-bottom: .5rem;
+            }
+        }
+    }
+}
+@media screen and (max-width: 576px) {
+    .container {
+        .wrapper {
+            padding: .25rem .75rem 1.25rem
+        }
+    }
+}

@@ -1,0 +1,20 @@
+{
+    "SUN": "Sun",
+    "RAIN": "Rain",
+    "SHWR": "Shower",
+    "THUNDER": "Thunderstorm",
+    "CLOUD": "Cloud",
+    "OVERCAST": "Cloudy",
+    "FOG": "Fog",
+    "STORM": "Thunderstorms",
+    "MONSOON": "Monsoon",
+    "HOT": "Hot",
+    "COLD": "Cold",
+    "BREEZY": "Gentle",
+    "HAZE": "Light fog",
+    "DRIZZLE": "Drizzle",
+    "HUMID": "Wet",
+    "DRY": "Dried",
+    "TROPSTORM": "Tropical storm",
+    "CYCLONE": "Tornado"
+}

@@ -1,0 +1,153 @@
+[
+  {
+    "id": 1,
+    "subject": "Bid for Construction Project",
+    "description": "Submit bid proposal for the construction of a new commercial building.",
+    "startDate": "2024-07-01",
+    "dueDate": "2024-08-15",
+    "actualStartDate": "2024-07-05",
+    "actualEndDate": "2024-08-10",
+    "parentId": 0,
+    "projectId": 1001,
+    "supervisor": {
+      "id": 10,
+      "fullname": "John Smith",
+      "phone": "123-456-7890"
+    },
+    "type": 1,
+    "status": 2,
+    "progress": 50,
+    "startTime": "08:00",
+    "attachmentLinks": [],
+    "tagVersionId": 1,
+    "tagVersionName": "v1.0",
+    "notes": "Bid submission pending approval.",
+    "issueContacts": [],
+    "issueContactDTOs": null,
+    "assignedTo": null,
+    "createdBy": null,
+    "attributes": []
+  },
+  {
+    "id": 2,
+    "subject": "Renovation Project Proposal",
+    "description": "Proposal for renovating an existing office building.",
+    "startDate": "2024-06-15",
+    "dueDate": "2024-08-30",
+    "actualStartDate": "2024-06-20",
+    "actualEndDate": "2024-08-25",
+    "parentId": 1,
+    "projectId": 1002,
+    "supervisor": {
+      "id": 10,
+      "fullname": "John Smith",
+      "phone": "123-456-7890"
+    },
+    "type": 1,
+    "status": 2,
+    "progress": 50,
+    "startTime": "08:00",
+    "attachmentLinks": [],
+    "tagVersionId": 1,
+    "tagVersionName": "v1.0",
+    "notes": "Bid submission pending approval.",
+    "issueContacts": [],
+    "issueContactDTOs": null,
+    "assignedTo": null,
+    "createdBy": null,
+    "attributes": []
+  },
+  {
+    "id": 3,
+    "subject": "Interior Design Proposal",
+    "description": "Proposal for designing interiors of a luxury apartment complex.",
+    "startDate": "2024-07-10",
+    "dueDate": "2024-09-30",
+    "actualStartDate": "2024-07-15",
+    "actualEndDate": "2024-09-25",
+    "parentId": 1,
+    "projectId": 1003,
+    "supervisor": {
+      "id": 12,
+      "fullname": "Emily Johnson",
+      "phone": "987-654-3210"
+    },
+    "type": 2,
+    "status": 1,
+    "progress": 70,
+    "startTime": "09:00",
+    "attachmentLinks": [
+    ],
+    "tagVersionId": 1,
+    "tagVersionName": "v1.1",
+    "notes": "Finalizing details before client review.",
+    "issueContacts": [],
+    "issueContactDTOs": null,
+    "assignedTo": null,
+    "createdBy": null,
+    "attributes": [
+    ]
+  },
+  {
+    "id": 4,
+    "subject": "Interior Design Proposal",
+    "description": "Proposal for designing interiors of a luxury apartment complex.",
+    "startDate": "2024-07-10",
+    "dueDate": "2024-09-30",
+    "actualStartDate": "2024-07-15",
+    "actualEndDate": "2024-09-25",
+    "parentId": 3,
+    "projectId": 1003,
+    "supervisor": {
+      "id": 12,
+      "fullname": "Emily Johnson",
+      "phone": "987-654-3210"
+    },
+    "type": 2,
+    "status": 1,
+    "progress": 70,
+    "startTime": "09:00",
+    "attachmentLinks": [
+    ],
+    "tagVersionId": 1,
+    "tagVersionName": "v1.1",
+    "notes": "Finalizing details before client review.",
+    "issueContacts": [],
+    "issueContactDTOs": null,
+    "assignedTo": null,
+    "createdBy": null,
+    "attributes": [
+    ]
+  },
+  {
+    "id": 5,
+    "subject": "Interior Design Proposal",
+    "description": "Proposal for designing interiors of a luxury apartment complex.",
+    "startDate": "2024-07-10",
+    "dueDate": "2024-09-30",
+    "actualStartDate": "2024-07-15",
+    "actualEndDate": "2024-09-25",
+    "parentId": 3,
+    "projectId": 1003,
+    "supervisor": {
+      "id": 12,
+      "fullname": "Emily Johnson",
+      "phone": "987-654-3210"
+    },
+    "type": 2,
+    "status": 1,
+    "progress": 70,
+    "startTime": "09:00",
+    "attachmentLinks": [
+    ],
+    "tagVersionId": 1,
+    "tagVersionName": "v1.1",
+    "notes": "Finalizing details before client review.",
+    "issueContacts": [],
+    "issueContactDTOs": null,
+    "assignedTo": null,
+    "createdBy": null,
+    "attributes": [
+    ]
+  }
+]    

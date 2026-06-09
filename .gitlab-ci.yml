@@ -1,0 +1,53 @@
+stages:
+  - build
+  - deploy
+
+build-job:
+  stage: build
+  script:
+    - export TAG="1.0.0.$(date +%Y%m%d).$CI_JOB_ID"
+    - echo "$TAG" > image_tag.txt
+    - echo "Building image with tag $TAG"
+
+    - echo "Build application..."
+    - echo "Node version:"
+    - node -v
+    - echo "NPM version:"
+    - npm -v
+    - export NODE_OPTIONS="--max-old-space-size=8192"
+    - npm install --force
+    - npx update-browserslist-db@latest || true
+    - CI=false npm run build
+    - echo "Build complete."
+
+    - DOCKER_REGISTRY=dockerhub.anybim.vn docker compose build
+    - docker login -u admin -p Lenotiv@2020 dockerhub.anybim.vn
+    - docker tag dockerhub.anybim.vn/nvh_view:dev dockerhub.anybim.vn/nvh_view:$TAG
+    - docker push dockerhub.anybim.vn/nvh_view:$TAG
+    - echo "Docker image pushed dockerhub.anybim.vn/nvh_view:$TAG"
+  artifacts:
+    paths:
+      - image_tag.txt
+    expire_in: 1 hour
+  tags:
+    - build
+  only:
+    - master
+
+deploy-job:
+  stage: deploy
+  dependencies:
+    - build-job
+  script:
+    - export TAG=$(cat image_tag.txt)
+    - echo "Deploying image with tag $TAG"
+
+    - cd /home/build/pkm-k8s/NVH/
+    - cp cxm.yml cxm$TAG.yml
+    - sed -i "s/tag1/$TAG/g" cxm$TAG.yml
+    - kubectl apply -f cxm$TAG.yml
+    - echo "Application deployed with image dockerhub.anybim.vn/nvh_view:$TAG"
+  tags:
+    - deploy1
+  only:
+    - master

@@ -1,0 +1,65 @@
+@import url('@/App.module.less');
+.main {
+  height: 100%;
+  border-inline-end: 1px solid rgba(5, 5, 5, 0.06);
+}
+.menusWrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.top_menu {
+  flex: 1;
+  overflow-y: auto;
+  border-inline-end: none !important;
+}
+
+.bottom_menu {
+  height: fit-content;
+  border-inline-end: none !important;
+  box-shadow: -1px -2px 11px -6px #888 !important;
+  border-bottom: 1px solid #0000001c;
+}
+.toggleButton {
+  position: absolute;
+  right: 0;
+  top: 10px;
+  transform: translateX(-10%);
+  z-index: 2;
+}
+.avatarContainer {
+  display: flex;
+  margin: 4px;
+  padding-block: 4px;
+  max-height: 40px;
+  overflow: hidden;
+  &_wrapper {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+  &_userName {
+    color: #0050b3;
+    opacity: 1;
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    transition: all 500ms ease-in-out, opacity 500ms ease-in-out 200ms;
+
+    &.textCollapsed {
+      width: 0px;
+      display: none;
+      opacity: 0;
+      transition: width 300ms ease-in-out, opacity 10ms ease-in-out, all 500ms ease-in-out 200ms;
+    }
+  }
+  & .logoutButton {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "Choose project": "Choose project",
+  "Find project name": "Find project name",
+  "Remove": "Remove",
+  "createProject": {
+    "button": "Tạo dự án",
+    "cancel": "Hủy",
+    "steps": {
+      "generalInfo": "General information",
+      "projectDoc": "Project document",
+      "projectMem": "Project member"
+    },
+    "projectInfo": {
+      "title": "Project information",
+      "projectName": "Project name",
+      "projectNamePlaceholder": "Input project name",
+      "requireProjectName": "Project name is required",
+      "projectStartDate": "Start date",
+      "projectStartDatePlaceholder": "Input start date",
+      "requireProjectStartDate": "Start date is required",
+      "projectEndDate": "End date",
+      "projectEndDatePlaceholder": "Input end date",
+      "requireProjectEndDate": "End date is required",
+      "city": "City",
+      "requireCity": "City is required",
+      "district": "District",
+      "requireDistrict": "District is required",
+      "address": "Address",
+      "addressPlaceholder": "Input project address",
+      "requireAddress": "Address is required",
+      "description": "Description",
+      "projectAvatar": "Project avatar",
+      "requiredProjectAvatar": "Project avatar is required"
+    },
+    "Warehouse": {
+      "title": "Select warehouse from accounting",
+      "name": "Warehouse"
+    },
+    "investorInfo": {
+      "title": "Investor information",
+      "investorName": "Investor name",
+      "investorNamePlaceholder": "Input investor name",
+      "requireInvestorName": "Investor name is required",
+      "investorPhone": "Investor phone",
+      "investorPhonePlaceholder": "Input investor phone",
+      "requireInvestorPhone": "Investor phone is required",
+      "investorEmail": "Email",
+      "investorEmailPlaceholder": "Input investor email",
+      "requireInvestorEmail": "Email is required",
+      "emailNotValid": "Email is not valid"
+    },
+    "addDocument": "Add document",
+    "projectMember": {
+      "title": "Member",
+      "addMember": "Add member",
+      "table": {
+        "name": "Name",
+        "role": "Role"
+      },
+      "modal": {
+        "memberList": "Member list",
+        "searchMemberPlaceholder": "Search member",
+        "roleList": "Role List",
+        "cancel": "Cancel",
+        "add": "Add"
+      }
+    },
+    "back": "Back",
+    "next": "Next",
+    "finish": "Finish",
+    "createProjectSuccessfully": "Create project sucessfully!",
+    "startDate": "Start date",
+    "endDate": "End date",
+    "address": "Address",
+    "owner": "Owner",
+    "phone": "Phone",
+    "email": "Email",
+    "backToProjectList": "Back to project list",
+    "goToBiddingContractPage": "Bidding - Contract"
+  },
+  "project": {
+    "status": {
+      "bidding": "Bidding",
+      "completed": "Completed",
+      "executing": "Executing"
+    }
+  },
+  "projectMenuDropdown": {
+    "delete": "Delete",
+    "deleteTitle": "Delete project",
+    "deleteContent": "Do you want to delete",
+    "yes": "Yes",
+    "no": "No"
+  },
+  "projectSetting": {
+    "tabs": {
+      "generalInfo": "General information",
+      "projectMember": "Project member",
+      "jobCategory": "Job Category",
+      "phase": "Phase",
+      "category": "Category"
+    },
+    "save": "Save",
+    "projectMember": {
+      "addMember": "Add member",
+      "findMember": "Find member",
+      "table": {
+        "memberId": "Member ID",
+        "memberName": "Member name",
+        "role": "Role",
+        "team": "Team",
+        "note": "Note",
+        "action": {
+          "deleteTitle": "Delete this member",
+          "deleteDescription": "Are you sure to delete member {{mem}}?",
+          "okText": "Yes",
+          "cancelText": "No",
+          "deleteSuccessTitle": "Delete member successfully",
+          "deleteSuccessDescrption": "Deleted {{mem}} out of project"
+        }
+      },
+      "modalUpdateMember": {
+        "title": "Update member",
+        "role": "Role",
+        "note": "Note",
+        "notePlaceholder": "Input note",
+        "okText": "Confirm",
+        "cancelText": "Cancel"
+      },
+      "modalAddMember": {
+        "title": "Add project member",
+        "memberList": "Member list",
+        "searchMemberPlaceholder": "Search member",
+        "roleList": "Role List",
+        "okText": "Cancel",
+        "cancelText": "Add"
+      }
+    }
+  }
+}

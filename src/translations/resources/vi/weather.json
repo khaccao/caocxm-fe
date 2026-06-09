@@ -1,0 +1,20 @@
+{
+    "SUN": "Nắng",
+    "RAIN": "Mưa",
+    "SHWR": "Mưa rào",
+    "THUNDER": "Mưa dông",
+    "CLOUD": "Mây",
+    "OVERCAST": "Nhiều mây",
+    "FOG": "Sương mù",
+    "STORM": "Giông bão",
+    "MONSOON": "Gió mùa",
+    "HOT": "Nóng",
+    "COLD": "Lạnh",
+    "BREEZY": "Gió nhẹ",
+    "HAZE": "Sương mù nhẹ",
+    "DRIZZLE": "Mưa phùn",
+    "HUMID": "Ẩm ướt",
+    "DRY": "Khô",
+    "TROPSTORM": "Bão nhiệt đới",
+    "CYCLONE": "Lốc xoáy"
+}

@@ -1,0 +1,165 @@
+.paymentPlanContainer {
+  padding: 0 12px;
+  background: #fff;
+  max-height: 100%;
+  overflow: auto;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  margin-bottom: 12px;
+}
+
+.actionBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filterBar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: -16px;
+  margin-bottom: 12px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.cellEditable {
+  cursor: pointer;
+  /* padding: 4px; */
+  /* border: 1px solid #cacaca;
+  border-radius: 8px; */
+  /* min-height: 32px; */
+}
+
+.cellLocked {
+  color: rgba(0, 0, 0, 0.45);
+  cursor: not-allowed;
+}
+
+.rowLocked {
+  background-color: #fafafa;
+  color: rgba(0, 0, 0, 0.45);
+  cursor: not-allowed;
+}
+
+.selectedCell {
+  border: 1px solid rgb(24, 228, 255) !important;
+  position: relative;
+  z-index: 1;
+}
+
+.selectableRow {
+  cursor: pointer;
+}
+
+.columnDropdown {
+  display: flex;
+  flex-direction: column;
+  height: 300px;
+  width: 200px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.columnDropdownBody {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px 12px 0;
+}
+
+.columnCheckbox {
+  display: flex;
+  margin-bottom: 12px;
+}
+
+.columnDropdownFooter {
+  padding: 12px;
+  border-top: 1px solid #f0f0f0;
+  text-align: right;
+}
+
+@media screen and (max-width: 1210px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media screen and (max-width: 1090px) {
+  .filterBar {
+    flex-wrap: wrap-reverse;
+  }
+}
+
+@media screen and (max-width: 715px) {
+  .actionBar {
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+  }
+}
+
+.tableWrapper :global(.ant-table-cell-fix-left),
+.tableWrapper :global(.ant-table-cell-fix-right) {
+  z-index: 20 !important;
+  position: sticky !important;
+}
+
+.tableWrapper :global(.ant-table-row:hover) :global(.ant-table-cell-fix-left),
+.tableWrapper :global(.ant-table-row:hover) :global(.ant-table-cell-fix-right) {
+  z-index: 30 !important;
+  background-color: #ffffff !important;
+}
+.customExcelTable :global(.ant-table-cell) {
+  padding: 0 4px !important;
+  white-space: nowrap !important;
+  line-height: 1.6;
+}
+
+.customExcelTable :global(.ant-table-thead > tr > th) {
+  height: '120%' !important;
+  white-space: normal !important; /* Cho phép xuống dòng nếu cần */
+}
+.customExcelTable :global(.ant-table-thead) > tr > th,
+.customExcelTable :global(.ant-table-tbody) > tr > td {
+  padding: 0 4px !important;
+  border: 1px solid #000 !important;
+  line-height: 1.6;
+}
+
+/* Bỏ top border của tbody cells */
+.customExcelTable :global(.ant-table-tbody) > tr > td {
+  border-top: none !important;
+}
+
+.summaryCellBorder {
+  border-left: 1px solid #000 !important;
+  border-right: 1px solid #000 !important;
+  border-bottom: 2px solid #000 !important;
+  border-top: 1px solid #000 !important;
+  background: #f7f7f7 !important;
+  /* font-weight: bold !important; */
+}
+.high-z-index-column {
+  z-index: 1001 !important;
+  position: relative; /* cần thiết để z-index có hiệu lực */
+  background: white; /* nếu cần đè lên thành phần có nền */
+}

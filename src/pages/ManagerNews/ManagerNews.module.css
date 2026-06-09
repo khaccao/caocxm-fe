@@ -1,0 +1,16 @@
+.custom-row {
+  transition: background-color 0.2s; /* Hiệu ứng mượt */
+}
+
+.custom-row:hover {
+  background-color: #f0f8ff; /* Màu nền khi hover */
+}
+
+.functionContainer {
+  width: 100%;
+  height: auto;
+  display: flex;
+  justify-content: space-between;
+  /* border-top: 0.1px solid #e4e4e4; */
+  border-bottom: 0.1px solid #d1cfcf;
+}

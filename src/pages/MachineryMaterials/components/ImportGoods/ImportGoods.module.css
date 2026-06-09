@@ -1,0 +1,127 @@
+.formContainer {
+  display: flex;
+  justify-content: space-between;
+  gap: 150px;
+  align-items: center;
+  font-weight: 500;
+  width: 100%;
+}
+
+.formItem {
+  flex: 1;
+  width: '100%';
+}
+
+.container {
+  margin-top: 190px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.buttonNhapkho {
+  display: flex;
+  align-items: center;
+}
+
+.printIcon {
+  font-size: 16px;
+  width: 46px;
+  height: 30px;
+  border: 1px solid rgba(217, 217, 217, 1);
+  border-radius: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 5px;
+}
+
+.buttonGuidexuat {
+  background-color: rgba(217, 217, 217, 1);
+  height: 32px;
+  color: black;
+  display: flex;
+  align-items: center;
+}
+
+.inputCode {
+  margin-bottom: 10px;
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(24, 144, 255, 1);
+}
+
+.inputDate02 {
+  width: 217px;
+}
+
+.formTitle {
+  font-size: 24px;
+  font-weight: 500;
+  font-family: 'Roboto', sans-serif;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.underlineText {
+  color: rgba(24, 144, 255, 1);
+  text-decoration: underline;
+}
+
+.no-hover-effect {
+  pointer-events: none;
+  background-color: transparent;
+}
+
+.no-hover-effect:hover {
+  background-color: transparent;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: flex-start;
+  /* Căn chỉnh các button */
+  gap: 16px;
+  /* Khoảng cách giữa các button */
+  margin-left: 10px;
+  /* Khoảng cách từ bên trái */
+}
+
+.uploadButton {
+  margin-right: auto;
+}
+
+.uploadInput {
+  display: none;
+}
+
+.fileList {
+  margin-top: 8px;
+}
+
+.fileItem {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.fileName {
+  cursor: pointer;
+  color: #1890ff;
+  margin-right: 8px;
+}
+
+.fileName:hover {
+  text-decoration: underline;
+}
+.linkButton {
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 0;
+  color: #007bff;
+  text-decoration: underline;
+  font: inherit;
+}

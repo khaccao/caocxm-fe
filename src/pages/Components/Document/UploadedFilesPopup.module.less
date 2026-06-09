@@ -1,0 +1,47 @@
+.ModelRoot {
+  position: relative;
+}
+
+.popup {
+  position: fixed;
+  background-color: white;
+  border: 1px solid #ccc;
+  padding: 10px;
+  z-index: 999;
+  width: 400px;
+  bottom: 20px;
+  /* Khoảng cách bottom từ cạnh dưới của màn hình */
+  right: 20px;
+  /* Khoảng cách right từ cạnh phải của màn hình */
+  border-radius: 8px;
+}
+
+.popupheader {
+  background-color: #ffffff;
+  padding: 5px;
+  cursor: move;
+  font-size: 20;
+  font-weight: bold;
+  display: flex;
+  flex-direction: row;
+}
+
+.popupcontent {
+  padding: 10px;
+}
+
+.inContent {
+  height: 225px;
+  overflow: scroll;
+  width: 100%;
+  padding: 10px;
+}
+
+.inContent::-webkit-scrollbar {
+  display: none;
+  /* Safari and Chrome */
+  width: 0;
+  /* Remove scrollbar space */
+  background: transparent;
+  /* Optional: just make scrollbar invisible */
+}

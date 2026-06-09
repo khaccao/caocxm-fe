@@ -1,0 +1,26 @@
+.tableContainer {
+    background-color: white;
+    margin: 10px;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.tableHeader {
+    margin-bottom: 16px;
+}
+
+.headerContainer {
+    display: flex;
+}
+
+.headerContainer h3 {
+    font-size: 16px;
+    font-weight: bold;
+    padding: 0 16px;
+}
+
+.underlineText {
+    color: rgba(24, 144, 255, 1);
+    text-decoration: underline;
+}

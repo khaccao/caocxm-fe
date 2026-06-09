@@ -1,0 +1,24 @@
+.mainContainer {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+}
+
+.contentContainer {
+    flex: 1;
+    background-color: rgba(245, 245, 245, 1);
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.contentContainer::-webkit-scrollbar,
+.contentContainer::-webkit-scrollbar-track,
+.contentContainer::-webkit-scrollbar-thumb {
+    background-color: transparent !important;
+    -webkit-box-shadow: none !important;
+}
+
+.contentContainer::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+}

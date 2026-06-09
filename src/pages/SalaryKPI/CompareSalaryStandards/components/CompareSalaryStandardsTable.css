@@ -1,0 +1,16 @@
+.error-row {
+  background-color: #fbd6d4;
+}
+
+.compare-salary-standards-table {
+  padding: 6px;
+}
+
+.compare-salary-standards-table .ant-table-thead > tr > th {
+  font-weight: bold;
+  margin: auto 0;
+}
+
+.negative-diff-row {
+  background-color: #FBD6D4 !important;
+}

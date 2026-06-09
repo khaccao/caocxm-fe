@@ -1,0 +1,77 @@
+import { useEffect, useRef } from 'react';
+
+import { defaultPagingParams } from '@/common/define';
+import { DocumentsTable, ProjectDocumentsHeader } from '@/pages/Components/Document';
+import { getActiveMenu } from '@/store/app';
+import { documentActions, getDocumentQueryParams, getFolderRootId, getPathDocument } from '@/store/documents';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { getFileRoots, getSelectedProject } from '@/store/project';
+
+export const DocumentSettlement = () => {
+  const dispatch = useAppDispatch();
+  const folderRootId = useAppSelector(getFolderRootId());
+  const documentPath: any = useAppSelector(getPathDocument());
+  const selectedProject = useAppSelector(getSelectedProject());
+  const listDataFileRoots = useAppSelector(getFileRoots());
+  const activeMenu = useAppSelector(getActiveMenu());
+  const params = useAppSelector(getDocumentQueryParams());
+  const isCallRef = useRef(true);
+  useEffect(() => {
+    if (selectedProject) {
+      if (listDataFileRoots && listDataFileRoots?.results?.length > 0) {
+        const rootId = listDataFileRoots.results.find((i: any) => i.name === 'hosoquyettoan');
+        if (rootId) {
+          dispatch(documentActions.setFolderRootId(rootId?.id));
+        } else {
+          isCallRef.current = false;
+          dispatch(documentActions.setFolderRootId(null));
+          dispatch(documentActions.setDocuments([]));
+        }
+      }
+      dispatch(documentActions.setDocumentPath([]));
+    }
+    // eslint-disable-next-line
+  }, []);
+
+  useEffect(() => {
+    const lastPath = documentPath[documentPath?.length - 1];
+    if (lastPath) {
+      dispatch(documentActions.getLabelRequest({ documentId: lastPath?.id, params: defaultPagingParams }));
+    } else {
+      if (folderRootId && isCallRef.current) {
+        dispatch(documentActions.getLabelRequest({ documentId: folderRootId, params: defaultPagingParams }));
+      }
+    }
+    // eslint-disable-next-line
+  }, [folderRootId, documentPath, selectedProject]);
+
+  const handleSearchChange = (search: string) => {
+    const newParams = { ...params, page: 1, search };
+    if (!documentPath?.length && folderRootId) {
+      dispatch(documentActions.getLabelRequest({ documentId: folderRootId, params: newParams }));
+    } else {
+      const lastPath = documentPath[(documentPath?.length || 1) - 1];
+      if (lastPath) {
+        dispatch(documentActions.getLabelRequest({ documentId: lastPath.id, params: newParams }));
+      }
+    }
+  };
+
+  return (
+    <>
+      <ProjectDocumentsHeader
+        title={activeMenu?.label}
+        pass={activeMenu}
+        initialSearch={params.search}
+        onSearchChange={handleSearchChange}
+      />
+      <DocumentsTable
+        pass={activeMenu}
+        policies={{
+          create: ['HSQuyetToanCongTrinh.Create'],
+          delete: ['HSQuyetToanCongTrinh.Delete'],
+        }}
+      />
+    </>
+  );
+};

@@ -1,0 +1,91 @@
+.headerContainer {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    padding: 10px;
+  }
+  
+  .headerLeft {
+    // width: 30%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .titleContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .searchContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  @media only screen and (max-width: 670px) {
+    .headerContainer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  
+    .headerLeft {
+      flex-direction: column;
+      align-items: flex-start;
+      padding-bottom: 10px;
+    }
+  }
+  .wrapperStatisticBonus {
+    :global(.ant-table-container .ant-table-tbody > tr.ant-table-row .ant-table-cell:nth-child(3) .ant-btn ) {
+      border: none;
+     }
+  
+     :global(.ant-table-container .ant-table-thead > tr > th) {
+       text-align: center !important;
+     }
+   
+     :global(.ant-table-container .ant-table-tbody > tr.ant-table-row .ant-table-cell:nth-child(9) .ant-select-selector) {
+       border: none;
+       border-color: transparent !important;
+       box-shadow: none !important;
+       border-radius: 10px !important;
+       height: 25px !important;
+       display: flex;
+       align-items: center;
+       justify-content: center;
+       padding: 5px !important;
+       background: transparent;
+       margin-top: 2px;
+     }
+  
+      @media only screen and (max-width: 1200px) {
+      :global(.ant-table-container .ant-table-body) {
+        max-height: 60vh !important;
+      }
+      }
+  
+      @media only screen and (max-width: 992px) {
+        /* CSS cho máy tính bảng ngang hoặc thiết bị nhỏ */
+        :global(.ant-table-container .ant-table-body) {
+          max-height: 55vh !important;
+        }
+      }
+     
+     :global(.ant-table-container .ant-table-tbody > tr.ant-table-row .ant-table-cell:nth-child(9)  .ant-select-arrow) {
+       margin-right: 25px !important;
+       color: black;
+     }
+     :global(.ant-table-container .ant-table-tbody > tr.ant-table-row .ant-table-cell:nth-child(9)  .ant-select-selection-item) {
+       padding-inline-end : 14px !important;
+       padding-inline-start: 5px !important;
+     }
+  
+  }
+
+//   css StatisticBonusContent

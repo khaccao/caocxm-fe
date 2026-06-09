@@ -1,0 +1,12 @@
+{
+  "Team": "Team",
+  "table": {
+    "Name": "Name",
+    "StandardOperation": "Standard Operation",
+    "AssignedWork": "Assigned Work",
+    "ActualWork": "Actual Work",
+    "LaborSaved": "Labor saved"
+  },
+  "No data available.": "No data available.",
+  "Please select a date filter!": "Please select a date filter!"
+}

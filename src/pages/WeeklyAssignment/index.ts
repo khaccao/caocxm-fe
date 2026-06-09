@@ -1,0 +1,1 @@
+export { WeeklyAssignment } from './WeeklyAssignment';

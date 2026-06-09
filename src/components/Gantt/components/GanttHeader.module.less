@@ -1,0 +1,27 @@
+.tabs {
+    max-height: 30px;
+    background-color: #E6F7FF;
+    border-radius: 5px;
+    :global(.ant-tabs-tab) {
+        padding: 4px 24px 4px 24px !important;
+        min-height: 30px;
+        margin: 0 !important;
+        cursor: pointer;
+        :global(.ant-tabs-tab-btn){
+          color: #096DD9 !important;
+        }
+      }
+      :global(.ant-tabs-tab-active) {
+        background-color: #096DD9 !important;
+        :global(.ant-tabs-tab-btn) {
+          color: white !important;
+        }
+      }
+      :global(.ant-tabs-ink-bar) {
+        display: none;
+      }
+      :global(.ant-tabs-nav-operations) {
+        display: none !important;
+      }
+  }
+  

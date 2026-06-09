@@ -1,0 +1,81 @@
+.formItem {
+    display: flex;
+    flex-direction: row;
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+  }
+  .ant-modal-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .container {
+    margin-top: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .buttonNhapkho { 
+    display: flex;
+    align-items: center;
+  }
+  .printIcon {
+    font-size: 16px;
+    width: 46px;
+    height: 30px;
+    border: 1px solid rgba(217, 217, 217, 1);
+    border-radius: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 5px;
+  }
+  
+  .buttonGuidexuat {
+    background-color: rgba(217, 217, 217, 1);
+    height: 32px;
+    color: black;
+    display: flex;
+    align-items: center;
+  }
+  
+  .inputCode {
+    margin-bottom: 10px;
+    font-weight: 700;
+    font-size: 14px;
+    color: rgba(24, 144, 255, 1);
+  }
+  
+  .inputOption {
+    width: 217px;
+  }
+  
+  .inputDate01 {
+    width: 217px;
+  }
+  
+  .inputDate02 {
+    width: 217px;
+  }
+  
+  .formTitle {
+    font-size: 24px;
+    font-weight: 500;
+    font-family: 'Roboto', sans-serif;
+  }
+  .tableWrapper {
+    overflow-x: auto;
+  }
+  
+  .tableWrapper .ant-table {
+    min-width: 1000px;
+  }
+  .underlineText {
+    color: rgba(24, 144, 255, 1);
+    text-decoration: underline;
+  }
+  .table {
+    height: 90%;
+  }

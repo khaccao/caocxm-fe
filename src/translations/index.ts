@@ -1,2 +1,29 @@
-export { default as vi } from './vi';
-export { default as en } from './en';
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+
+import * as resources from './resources';
+
+const ns = Object.keys(Object.values(resources)[0]);
+export const defaultNS = ns;
+
+i18n.use(initReactI18next).init({
+  ns,
+  defaultNS,
+  resources: {
+    ...Object.entries(resources).reduce(
+      (acc, [key, value]) => ({
+        ...acc,
+        [key]: value,
+      }),
+      {},
+    ),
+  },
+  lng: 'vi',
+  fallbackLng: 'vi',
+  interpolation: {
+    escapeValue: false, // not needed for react as it escapes by default
+  },
+  compatibilityJSON: 'v3',
+});
+
+export default i18n;

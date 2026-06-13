@@ -306,7 +306,7 @@ export const TimelineSection = () => {
         const allowApprove = Utils.checkAllowApproveHour(group.value);
         const { day_Hours, approved_Day_Hours, approvedExtra } = group.value;
         const dateOnly = queryParams?.working_day?.format('YYYY-MM-DD');
-        const hoursWorked = dayjs(dateOnly + 'T' + day_Hours);
+        const hoursWorked = Utils.normalizeShiftBoundaryTime(dayjs(dateOnly + 'T' + day_Hours));
         let approvedWork = null;
         if (approvedExtra) {
           const { TotalApprovedMainShift, TotalApprovedOTShift } = JSON.parse(approvedExtra);
@@ -380,7 +380,7 @@ export const TimelineSection = () => {
             return '';
           }
           const { dataGroup, value } = item;
-          const position = value?.location ? JSON.parse(value.location) : null;
+          const position = Utils.parseCheckInLocation(value?.location);
           return `<div style="width: 100px">
             <div style="color: #1677ff;"><b>${dataGroup.name}</b></div>
             <div>Điểm danh lúc: <b>${item.title}</b></div>

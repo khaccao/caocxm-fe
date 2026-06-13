@@ -1,0 +1,68 @@
+.bch-rounding-page {
+  padding: 16px;
+}
+
+.bch-rounding-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.bch-rounding-title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.bch-rounding-subtitle {
+  margin-top: 4px;
+  color: rgba(0, 0, 0, 0.55);
+}
+
+.bch-rounding-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.bch-rounding-panel {
+  min-width: 0;
+  padding: 16px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+}
+
+.bch-rounding-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.bch-rounding-panel-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.bch-rounding-code {
+  color: rgba(0, 0, 0, 0.45);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: 12px;
+}
+
+.bch-rounding-actions {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+@media (max-width: 1100px) {
+  .bch-rounding-grid {
+    grid-template-columns: 1fr;
+  }
+}

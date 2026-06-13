@@ -1,67 +1,101 @@
 /* eslint-disable import/order */
+import React from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { eTypeReview, eTypeVatTuMayMoc, Paythesubcontractor } from '@/common/define';
 import { ComingSoon } from '@/components/ComingSoon';
 import MainLayout from '@/components/Layout/MainLayout';
 import ProjectLayout from '@/components/Layout/ProjectLayout';
-import { Bidding, ConstructionManuals, LoginPage, ShiftTemplates } from '@/pages';
-import NotFound from '@/pages/404';
-import { CapabilityProfile } from '@/pages/CapabilityProfile/CapabilityProfile';
-import CompanyEmployee from '@/pages/CompanyEmployee';
-import { CompanyGroup } from '@/pages/CompanyGroup';
-import { FileUpload, ViewFileNotOffice } from '@/pages/Components';
-import ConstructionMagazine from '@/pages/ConstructionMagazine';
-import { ContractKpiBidding } from '@/pages/ContractKpiBidding';
-import CostEstimate from '@/pages/CostEstimate';
-import CreateProjectPage from '@/pages/CreateProjectPage';
-import { DailyLaborSummary } from '@/pages/DailyLaborSummary';
-import EnvironmentalSanitationDiary from '@/pages/EnvironmentalSanitationDiary';
-import AdvancePlan from '@/pages/FinancialPlan/AdvancePlan';
-import { PaymentPlan } from '@/pages/FinancialPlan/PaymentPlan';
-import { HomePage } from '@/pages/HomePage';
-import { PersonnelTransfer } from '@/pages/HumanResources/PersonnelTransfer';
-import StatisticBonus from '@/pages/HumanResources/StatisticBonus';
-import { DepartmentKPIs } from '@/pages/KPI/DepartmentKPIs';
-import MachineryMaterials from '@/pages/MachineryMaterials';
-import { IncidentalCosts } from '@/pages/MachineryMaterials/components/IncidentalCosts';
-import { AccoutingManagement } from '@/pages/ManagementAccounting';
-import ManagerNews from '@/pages/ManagerNews';
-import EditNews from '@/pages/ManagerNews/EditNews';
-import MaterialAggregation from '@/pages/MaterialAggregation';
-import { NewsDetailPage, NewsPage } from '@/pages/NewsMainPage';
-import Organization from '@/pages/Organization';
-import { PreConstructionWork } from '@/pages/PreConstructionWork';
-import { ProductsDiary } from '@/pages/ProductsDiary/ProductsDiary';
-import { TransferMaterial } from '@/pages/Project';
-import InventoryDepot from '@/pages/Project/InventoryDepot';
-import ListSubcontract from '@/pages/Project/ListSubcontract';
-import ConstructionCosts from '@/pages/ProjectManagement/ConstructionCosts';
-import { Documents } from '@/pages/ProjectManagement/ProjectDocument';
-import { DocumentSettlement } from '@/pages/ProjectManagement/ProjectSettlement';
-import ProjectSettingPage from '@/pages/ProjectSettingPage';
-import ProjectsPage from '@/pages/ProjectsPage';
-import PublicPage from '@/pages/PublicPage';
-import { Review } from '@/pages/Review/Review';
-import SafetyDiary from '@/pages/SafetyDiary';
-import {
-  FirstSalaryAdvance,
-  FristSalaryPayment,
-  SecondSalaryAdvance,
-  SecondSalaryPayment,
-  YearEndBonus,
-} from '@/pages/SalaryKPI';
-import { CompareSalaryStandardsView } from '@/pages/SalaryKPI/CompareSalaryStandards';
-import SalaryOfDepartment from '@/pages/SalaryOfDepartments';
-import { AggregateCosts, PaytheSubcontractors } from '@/pages/Subcontractor';
-import TeamManagePage from '@/pages/TeamManagePage';
-import { TimelineSection as Timekeeping } from '@/pages/Timekeeping';
-import { HolidayCost, RecurringTravelEx, UnionDues, UnionExpenseTable } from '@/pages/UnionWelfareFund';
-import { WeeklyAssignment } from '@/pages/WeeklyAssignment';
 import { t } from 'i18next';
 import { AuthRouteObject } from './AuthRoute';
-import { InvoiceX } from '@/pages/InvoiceX';
-import { EditInvoiceX } from '@/pages/InvoiceX/EditInvoiceX';
+
+const lazyComponent = (
+  loader: () => Promise<any>,
+  exportName = 'default',
+): React.LazyExoticComponent<React.ComponentType<any>> =>
+  React.lazy<React.ComponentType<any>>(async () => {
+    const module = await loader();
+    return { default: module[exportName] };
+  });
+
+const Bidding = lazyComponent(() => import('@/pages/Bidding'), 'Bidding');
+const ConstructionManuals = lazyComponent(() => import('@/pages/ConstructionManuals'), 'ConstructionManuals');
+const LoginPage = lazyComponent(() => import('@/pages/LoginPage'), 'LoginPage');
+const ShiftTemplates = lazyComponent(() => import('@/pages/ShiftTemplates'), 'ShiftTemplates');
+const NotFound = lazyComponent(() => import('@/pages/404'));
+const CapabilityProfile = lazyComponent(
+  () => import('@/pages/CapabilityProfile/CapabilityProfile'),
+  'CapabilityProfile',
+);
+const CompanyEmployee = lazyComponent(() => import('@/pages/CompanyEmployee'));
+const CompanyGroup = lazyComponent(() => import('@/pages/CompanyGroup'), 'CompanyGroup');
+const FileUpload = lazyComponent(() => import('@/pages/Components'), 'FileUpload');
+const ViewFileNotOffice = lazyComponent(() => import('@/pages/Components'), 'ViewFileNotOffice');
+const ConstructionMagazine = lazyComponent(() => import('@/pages/ConstructionMagazine'));
+const ContractKpiBidding = lazyComponent(() => import('@/pages/ContractKpiBidding'), 'ContractKpiBidding');
+const CostEstimate = lazyComponent(() => import('@/pages/CostEstimate'));
+const CreateProjectPage = lazyComponent(() => import('@/pages/CreateProjectPage'));
+const DailyLaborSummary = lazyComponent(() => import('@/pages/DailyLaborSummary'), 'DailyLaborSummary');
+const EnvironmentalSanitationDiary = lazyComponent(() => import('@/pages/EnvironmentalSanitationDiary'));
+const AdvancePlan = lazyComponent(() => import('@/pages/FinancialPlan/AdvancePlan'));
+const PaymentPlan = lazyComponent(() => import('@/pages/FinancialPlan/PaymentPlan'), 'PaymentPlan');
+const HomePage = lazyComponent(() => import('@/pages/HomePage'), 'HomePage');
+const PersonnelTransfer = lazyComponent(
+  () => import('@/pages/HumanResources/PersonnelTransfer'),
+  'PersonnelTransfer',
+);
+const StatisticBonus = lazyComponent(() => import('@/pages/HumanResources/StatisticBonus'));
+const DepartmentKPIs = lazyComponent(() => import('@/pages/KPI/DepartmentKPIs'), 'DepartmentKPIs');
+const MachineryMaterials = lazyComponent(() => import('@/pages/MachineryMaterials'));
+const IncidentalCosts = lazyComponent(
+  () => import('@/pages/MachineryMaterials/components/IncidentalCosts'),
+  'IncidentalCosts',
+);
+const AccoutingManagement = lazyComponent(() => import('@/pages/ManagementAccounting'), 'AccoutingManagement');
+const ManagerNews = lazyComponent(() => import('@/pages/ManagerNews'));
+const EditNews = lazyComponent(() => import('@/pages/ManagerNews/EditNews'));
+const MaterialAggregation = lazyComponent(() => import('@/pages/MaterialAggregation'));
+const NewsDetailPage = lazyComponent(() => import('@/pages/NewsMainPage'), 'NewsDetailPage');
+const NewsPage = lazyComponent(() => import('@/pages/NewsMainPage'), 'NewsPage');
+const Organization = lazyComponent(() => import('@/pages/Organization'));
+const PreConstructionWork = lazyComponent(() => import('@/pages/PreConstructionWork'), 'PreConstructionWork');
+const ProductsDiary = lazyComponent(() => import('@/pages/ProductsDiary/ProductsDiary'), 'ProductsDiary');
+const TransferMaterial = lazyComponent(() => import('@/pages/Project/TransferMaterial'), 'TransferMaterial');
+const InventoryDepot = lazyComponent(() => import('@/pages/Project/InventoryDepot'));
+const ListSubcontract = lazyComponent(() => import('@/pages/Project/ListSubcontract'));
+const ConstructionCosts = lazyComponent(() => import('@/pages/ProjectManagement/ConstructionCosts'));
+const Documents = lazyComponent(() => import('@/pages/ProjectManagement/ProjectDocument'), 'Documents');
+const DocumentSettlement = lazyComponent(
+  () => import('@/pages/ProjectManagement/ProjectSettlement'),
+  'DocumentSettlement',
+);
+const ProjectSettingPage = lazyComponent(() => import('@/pages/ProjectSettingPage'));
+const ProjectsPage = lazyComponent(() => import('@/pages/ProjectsPage'));
+const PublicPage = lazyComponent(() => import('@/pages/PublicPage'), 'PublicPage');
+const Review = lazyComponent(() => import('@/pages/Review/Review'), 'Review');
+const SafetyDiary = lazyComponent(() => import('@/pages/SafetyDiary'));
+const FirstSalaryAdvance = lazyComponent(() => import('@/pages/SalaryKPI'), 'FirstSalaryAdvance');
+const FristSalaryPayment = lazyComponent(() => import('@/pages/SalaryKPI'), 'FristSalaryPayment');
+const SecondSalaryAdvance = lazyComponent(() => import('@/pages/SalaryKPI'), 'SecondSalaryAdvance');
+const SecondSalaryPayment = lazyComponent(() => import('@/pages/SalaryKPI'), 'SecondSalaryPayment');
+const YearEndBonus = lazyComponent(() => import('@/pages/SalaryKPI'), 'YearEndBonus');
+const CompareSalaryStandardsView = lazyComponent(
+  () => import('@/pages/SalaryKPI/CompareSalaryStandards'),
+  'CompareSalaryStandardsView',
+);
+const SalaryOfDepartment = lazyComponent(() => import('@/pages/SalaryOfDepartments'));
+const AggregateCosts = lazyComponent(() => import('@/pages/Subcontractor'), 'AggregateCosts');
+const PaytheSubcontractors = lazyComponent(() => import('@/pages/Subcontractor'), 'PaytheSubcontractors');
+const TeamManagePage = lazyComponent(() => import('@/pages/TeamManagePage'));
+const Timekeeping = lazyComponent(() => import('@/pages/Timekeeping'), 'TimelineSection');
+const BchRoundingSetup = lazyComponent(() => import('@/pages/BchRoundingSetup'), 'BchRoundingSetup');
+const HolidayCost = lazyComponent(() => import('@/pages/UnionWelfareFund'), 'HolidayCost');
+const RecurringTravelEx = lazyComponent(() => import('@/pages/UnionWelfareFund'), 'RecurringTravelEx');
+const UnionDues = lazyComponent(() => import('@/pages/UnionWelfareFund'), 'UnionDues');
+const UnionExpenseTable = lazyComponent(() => import('@/pages/UnionWelfareFund'), 'UnionExpenseTable');
+const WeeklyAssignment = lazyComponent(() => import('@/pages/WeeklyAssignment'), 'WeeklyAssignment');
+const InvoiceX = lazyComponent(() => import('@/pages/InvoiceX'), 'InvoiceX');
+const EditInvoiceX = lazyComponent(() => import('@/pages/InvoiceX/EditInvoiceX'), 'EditInvoiceX');
 
 type MetaMenu = {
   name?: string;
@@ -357,6 +391,12 @@ export const routers: MetaMenuAuthRouteObject[] = [
             element: <Timekeeping />,
             name: 'Timekeeping Report',
             path: '/reports/timekeeping-report',
+            auth: ['ChamCong.View'],
+          },
+          {
+            element: <BchRoundingSetup />,
+            name: 'BCH rounding setup',
+            path: '/reports/bch-rounding-setup',
             auth: ['ChamCong.View'],
           },
         ],

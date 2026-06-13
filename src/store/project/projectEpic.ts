@@ -18,7 +18,8 @@ import {
 } from '@/common/define';
 import { CreateFolderRootProject } from '@/common/project';
 import { LabelService } from '@/services/LabelService';
-import { CreateProjectWarehousePayload, ProjectService } from '@/services/ProjectService';
+import { CreateProjectMemberPayload, CreateProjectWarehousePayload, ProjectService } from '@/services/ProjectService';
+import { FaceCheckService } from '@/services/CheckInService';
 import Utils from '@/utils';
 import { issueActions } from '../issue';
 import { startLoading, stopLoading } from '../loading';
@@ -709,7 +710,7 @@ export const createManyProjectMembers$: RootEpic = (action$, state$) => {
     filter(projectActions.createManyProjectMemberRequest.match),
     withLatestFrom(state$),
     switchMap(([action, state]) => {
-      const { members } = action.payload;
+      const { members, setupCheckIn = true, teamId } = action.payload;
       const { selectedProject, queryParams } = state.project;
       if (!selectedProject) {
         return [];
@@ -718,7 +719,27 @@ export const createManyProjectMembers$: RootEpic = (action$, state$) => {
         [startLoading({ key: CreateManyProjectMemberLoadingKey })],
         ProjectService.Post.createManyProjectMembers(members).pipe(
           switchMap(() => {
-            return ProjectService.Get.getProjectMembers(selectedProject.id, { search: queryParams }).pipe(
+            const setupRequest = setupCheckIn && teamId
+              ? FaceCheckService.Post.setupProjectCheckInMembers(
+                  selectedProject.id,
+                  teamId,
+                  members.map((member: CreateProjectMemberPayload) => ({
+                    employeeId: member.employeeId,
+                    employeeCode: member.code,
+                    name: member.name,
+                    jobTitle: member.roleName || undefined,
+                  })),
+                ).pipe(
+                  catchError(error => {
+                    Utils.errorHandling(error);
+                    return of([]);
+                  }),
+                )
+              : of([]);
+            return setupRequest.pipe(
+              switchMap(() =>
+                ProjectService.Get.getProjectMembers(selectedProject.id, { search: queryParams }),
+              ),
               mergeMap(projMembers => {
                 Utils.successNotification();
                 return [projectActions.setProjectMembers(projMembers), hideModal({ key: AddMemberToProjectModalName })];

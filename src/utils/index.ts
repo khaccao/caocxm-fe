@@ -61,6 +61,23 @@ export default class Utils {
     return dateWithoutOffset;
   }
 
+  static parseCheckInLocation(location?: string | null) {
+    if (!location) {
+      return null;
+    }
+
+    try {
+      const parsed = JSON.parse(location);
+      return parsed && typeof parsed === 'object' ? parsed : null;
+    } catch {
+      return null;
+    }
+  }
+
+  static normalizeShiftBoundaryTime(time: Dayjs) {
+    return time.minute() === 59 && time.second() === 59 ? time.add(1, 'second') : time;
+  }
+
   static convertISOStringToDayjs(isoDateString: string | undefined) {
     try {
       if (isoDateString && isoDateString !== '') {

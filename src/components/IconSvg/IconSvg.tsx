@@ -15,7 +15,12 @@ interface IconSvgProps {
  * sau đó thêm enum là tên của icon svg vào IconSvgEnum trong common/define.ts để sử dụng
 */
 export const IconSvg = ({ name, width, color }: IconSvgProps) => {
-  const publicUrl = process.env.PUBLIC_URL ?? '';
+  const publicUrl = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-  return <>{SVG({ src: `${publicUrl}/icons/${name}.svg`, width, height: 'auto', fill: color })}</>;
+  return <>{SVG({
+    src: `${publicUrl}/icons/${name}.svg`,
+    width,
+    fill: color,
+    style: { height: 'auto' },
+  })}</>;
 };

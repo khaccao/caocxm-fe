@@ -49,7 +49,7 @@ class GroupController {
     editGroup: (inputValues: GroupDTO, id: any, options?: RequestOptions) => {
       return HttpClient.put(`${apiUrl}/Group/${id}`, inputValues, options);
     },
-    addMemberToGroup: (groupId: any, employeeIds: number, options?: RequestOptions) => {
+    addMemberToGroup: (groupId: any, employeeIds: number | number[], options?: RequestOptions) => {
       return HttpClient.put(`${apiUrl}/Group/addMemberToGroup/${groupId}`, employeeIds, options);
     },
     updateEmployeeToGroup: (groupId: number, employeeId: number, body: any, options?: RequestOptions) => {

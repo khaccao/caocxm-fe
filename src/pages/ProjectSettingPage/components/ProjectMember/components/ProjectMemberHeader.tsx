@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { PlusCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, SearchOutlined, UserSwitchOutlined } from '@ant-design/icons';
 import { Button, Input, Row, Space } from 'antd';
 import { useTranslation } from 'react-i18next';
 
@@ -11,14 +11,25 @@ import { WithPermission } from '@/hocs/PermissionHOC';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { showModal } from '@/store/modal';
 import { getProjectQueryParams, getSelectedProject, projectActions } from '@/store/project';
+import { ProjectCheckInMemberStatus } from '@/services/CheckInService';
+import { SetupCheckInMembersModal } from './SetupCheckInMembersModal';
 
-export const ProjectMemberHeader = () => {
+interface ProjectMemberHeaderProps {
+  checkInMembers: ProjectCheckInMemberStatus[];
+  onCheckInMembersChanged: () => void;
+}
+
+export const ProjectMemberHeader = ({
+  checkInMembers,
+  onCheckInMembersChanged,
+}: ProjectMemberHeaderProps) => {
   const { t } = useTranslation(['projects']);
   const dispatch = useAppDispatch();
   const selectedProject = useAppSelector(getSelectedProject());
   const queryParams = useAppSelector(getProjectQueryParams());
   const [timer, setTimer] = useState<any>(null);
   const [searchStr, setSearchStr] = useState(queryParams?.search);
+  const [setupCheckInOpen, setSetupCheckInOpen] = useState(false);
 
   useEffect(() => {
     setSearchStr(queryParams?.search);
@@ -54,6 +65,17 @@ export const ProjectMemberHeader = () => {
             {t('projectSetting.projectMember.addMember')}
           </Button>
         </WithPermission>
+        <WithPermission policyKeys={['CaiDat.ThanhVien.Edit']} strategy="disable">
+          <Button
+            size="middle"
+            type="text"
+            icon={<UserSwitchOutlined />}
+            onClick={() => setSetupCheckInOpen(true)}
+            style={{ color: colors.primary }}
+          >
+            Thiết lập chấm công
+          </Button>
+        </WithPermission>
       </Space>
       <Space>
         <Input
@@ -65,6 +87,15 @@ export const ProjectMemberHeader = () => {
           suffix={searchStr ? null : <SearchOutlined />}
         />
       </Space>
+      <SetupCheckInMembersModal
+        open={setupCheckInOpen}
+        checkInMembers={checkInMembers}
+        onClose={() => setSetupCheckInOpen(false)}
+        onSaved={() => {
+          setSetupCheckInOpen(false);
+          onCheckInMembersChanged();
+        }}
+      />
     </Row>
   );
 };

@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 
 import { FileImageOutlined } from '@ant-design/icons';
-import { Button, Card, Divider, Form, Input, Row, TimePicker, Typography } from 'antd';
+import { Alert, Button, Card, Divider, Form, Input, Row, TimePicker, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
@@ -28,12 +28,33 @@ export const CheckInDetail = ({ shifts, team_id, working_day }: CheckInDetailPro
   const [searchParams] = useSearchParams();
   const accessToken = searchParams.get('accessToken');
   const confirmLoading = useAppSelector(getActiveLoading('approvedHoursWorkingRequest'));
-  console.log(chkInDtl, 'chkInDtlchkInDtlchkInDtl');
+  const detailWorkday = chkInDtl?.date_Key
+    ? dayjs(Utils.convertDate(chkInDtl.date_Key.toString()))
+    : working_day;
+  const crossDayCheckIns = (chkInDtl?.checkIn_List || [])
+    .map((item: any) => ({
+      ...item,
+      localTime: dayjs(Utils.convertISODateToLocalTime(item.timeStamp)),
+    }))
+    .filter((item: any) => !item.localTime.isSame(detailWorkday, 'day'))
+    .sort((a: any, b: any) => a.localTime.valueOf() - b.localTime.valueOf());
+  const displayShifts = shifts
+    .filter(shift => shift.id)
+    .sort((a, b) => {
+      const aIsContinuation = a.startTime < '07:00:00';
+      const bIsContinuation = b.startTime < '07:00:00';
+      if (aIsContinuation !== bIsContinuation) {
+        return aIsContinuation ? 1 : -1;
+      }
+      return a.startTime.localeCompare(b.startTime);
+    });
   useEffect(() => {
     if (chkInDtl) {
       const { day_Hours, approved_Day_Hours, approved_Note, notes } = chkInDtl;
       const dateOnly = working_day.format('YYYY-MM-DD');
-      let workingHours = day_Hours ? dayjs(`${dateOnly}T${day_Hours}`) : dayjs(dateOnly);
+      let workingHours = day_Hours
+        ? Utils.normalizeShiftBoundaryTime(dayjs(`${dateOnly}T${day_Hours}`))
+        : dayjs(dateOnly);
       // workingHours = dayjs(`${dateOnly}T7:30:00`);
       let approvedHours =
         !approved_Day_Hours || approved_Day_Hours === '00:00:00'
@@ -81,9 +102,11 @@ export const CheckInDetail = ({ shifts, team_id, working_day }: CheckInDetailPro
 
   const renderCheckInTime = (shift: ShiftResponse, index: number) => {
     const chkInList = chkInDtl?.checkIn_List?.filter((x: any) => x.shift_Id === shift.id);
-    const dateOnly = working_day.format('YYYY-MM-DD');
+    const workday = detailWorkday;
+    const dateOnly = workday.format('YYYY-MM-DD');
     const goToWork = dayjs(`${dateOnly}T${shift?.startTime || ''}`);
     const getOffWork = dayjs(`${dateOnly}T${shift?.endTime || ''}`);
+    const isNightContinuation = shift.startTime < '07:00:00';
     const timeSuffix = goToWork.isAfter(getOffWork) ? ` ${t('Hôm sau')}` : '';
 
     return (
@@ -95,17 +118,29 @@ export const CheckInDetail = ({ shifts, team_id, working_day }: CheckInDetailPro
           <Typography.Text type="secondary">
             {`(${goToWork.format('HH:mm')} - ${getOffWork.format('HH:mm')}${timeSuffix})`}
           </Typography.Text>
+          {isNightContinuation && (
+            <Typography.Text type="secondary" style={{ marginLeft: 8 }}>
+              Ngày hôm sau, tính vào ngày công {workday.format('DD/MM/YYYY')}
+            </Typography.Text>
+          )}
         </Row>
         {chkInList?.map((chkIn: any, idx: number) => {
           const ckInTime = Utils.convertISODateToLocalTime(chkIn.timeStamp);
-          const position = chkIn.location ? JSON.parse(chkIn.location) : null;
+          const checkInDay = dayjs(ckInTime);
+          const belongsToPreviousWorkday = !checkInDay.isSame(workday, 'day');
+          const checkInTimeLabel = belongsToPreviousWorkday
+            ? `${checkInDay.format('DD/MM HH:mm')} (tính vào ${workday.format('DD/MM')})`
+            : checkInDay.format('HH:mm');
+          const position = Utils.parseCheckInLocation(chkIn.location);
           const formatedAddress =
             position?.address || (position ? `Lat: ${position.latitude} - Long: ${position.longitude}` : '');
           return (
             <Row key={chkIn.id} align="stretch">
-              <Typography.Text style={{ fontWeight: 600, width: 70, padding: 5 }}>{`${idx + 1}. ${dayjs(
-                ckInTime,
-              ).format('HH:mm')}`}</Typography.Text>
+              <Typography.Text
+                style={{ fontWeight: 600, minWidth: belongsToPreviousWorkday ? 210 : 70, padding: 5 }}
+              >
+                {`${idx + 1}. ${checkInTimeLabel}`}
+              </Typography.Text>
               <Button
                 ghost
                 shape="circle"
@@ -137,11 +172,41 @@ export const CheckInDetail = ({ shifts, team_id, working_day }: CheckInDetailPro
     <div>
       <Row align="stretch">
         <Typography.Text style={{ flex: 1, fontWeight: 600, fontSize: 16 }}>{t('History check-in')}</Typography.Text>
-        <Typography.Text style={{ paddingTop: 4 }}>{chkInDtl?.face_Identity_Id ? Utils.convertDate(chkInDtl.date_Key.toString(), true) : working_day.format('DD/MM/YYYY')}</Typography.Text>
+        <Typography.Text style={{ paddingTop: 4 }}>
+          Ngày công:{' '}
+          <b>
+            {chkInDtl?.face_Identity_Id
+              ? Utils.convertDate(chkInDtl.date_Key.toString(), true)
+              : working_day.format('DD/MM/YYYY')}
+          </b>
+        </Typography.Text>
       </Row>
       <Row style={{ marginTop: 10 }}>
+        {crossDayCheckIns.length > 0 && (
+          <Alert
+            type="info"
+            showIcon
+            style={{ width: '100%', marginBottom: 10 }}
+            message="Ca đêm liên ngày"
+            description={
+              <div>
+                <div>
+                  Ngày công: <b>{detailWorkday.format('DD/MM/YYYY')}</b>
+                </div>
+                <div>
+                  Lượt sau nửa đêm:{' '}
+                  <b>{crossDayCheckIns.map((item: any) => item.localTime.format('DD/MM HH:mm')).join(', ')}</b>
+                </div>
+                <div>
+                  Toàn bộ thời gian sau nửa đêm được gộp và tính vào ngày công{' '}
+                  <b>{detailWorkday.format('DD/MM/YYYY')}</b>.
+                </div>
+              </div>
+            }
+          />
+        )}
         <Card style={{ width: '100%' }}>
-          {shifts.filter(x => x.id).map((shift, idx) => renderCheckInTime(shift, idx))}
+          {displayShifts.map((shift, idx) => renderCheckInTime(shift, idx))}
         </Card>
       </Row>
       <Row style={{ marginTop: 15 }}>
@@ -160,7 +225,7 @@ export const CheckInDetail = ({ shifts, team_id, working_day }: CheckInDetailPro
             name="day_Hours"
             style={{ marginBottom: 5, width: '100%' }}
           >
-            <TimePicker style={{ width: '100%' }} disabled />
+            <TimePicker style={{ width: '100%' }} format="HH:mm" disabled />
           </Form.Item>
           {/* <Form.Item
             labelAlign="left"

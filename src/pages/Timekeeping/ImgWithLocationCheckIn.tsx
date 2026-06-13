@@ -56,10 +56,7 @@ export const ImgWithLocationCheckIn = () => {
   const fetchingPhoto = useAppSelector(getActiveLoading('getCheckInPhoto'));
 
   useEffect(() => {
-    if (chkInItem?.location) {
-      const loc = JSON.parse(chkInItem?.location);
-      setLocation(loc);
-    }
+    setLocation(Utils.parseCheckInLocation(chkInItem?.location));
     if (chkInItem?.id) {
       dispatch(timekeepingActions.getCheckInPhoto({ checkInId: chkInItem?.id, accessToken }));
     }
@@ -69,6 +66,8 @@ export const ImgWithLocationCheckIn = () => {
   const selftClose = () => {
     dispatch(hideModal({ key: 'showLocationImgCheckIn' }));
   };
+  const hasCoordinates =
+    Number.isFinite(Number(location?.latitude)) && Number.isFinite(Number(location?.longitude));
 
   return (
     <Modal title={chkInDtl?.name} open={visible} onCancel={selftClose} footer={null} width={902}>
@@ -94,9 +93,9 @@ export const ImgWithLocationCheckIn = () => {
         >
           <Typography.Text style={{ fontWeight: 600 }}>{t('Location')}</Typography.Text>
           <div ref={mapRef} style={{ height: 'calc(100% - 20px)', width: '100%' }}>
-            {location && (
+            {hasCoordinates && (
               <MapContainer
-                center={{ lat: location.latitude, lng: location.longitude }}
+                center={{ lat: Number(location.latitude), lng: Number(location.longitude) }}
                 zoom={13}
                 scrollWheelZoom={true}
               >
@@ -104,7 +103,7 @@ export const ImgWithLocationCheckIn = () => {
                   attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
-                <LocationMarker position={{ lat: location.latitude, lng: location.longitude }}>
+                <LocationMarker position={{ lat: Number(location.latitude), lng: Number(location.longitude) }}>
                   {location?.address || t('Name check in heare', { name: chkInDtl?.name })}
                 </LocationMarker>
               </MapContainer>

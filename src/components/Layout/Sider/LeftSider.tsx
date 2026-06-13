@@ -440,6 +440,11 @@ export const LeftSider = (props: SiderProps) => {
           key: '/reports/timekeeping-report',
           auth: ['ChamCong.View'],
         },
+        {
+          label: t('BCH rounding setup'),
+          key: '/reports/bch-rounding-setup',
+          auth: ['ChamCong.View'],
+        },
       ],
     },
     {

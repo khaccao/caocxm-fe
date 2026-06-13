@@ -24,6 +24,24 @@ export interface TeamsResponse {
   shifts: ShiftResponse[];
 }
 
+export interface ProjectCheckInMemberStatus {
+  faceIdentityId: string;
+  employeeId: number;
+  employeeCode: string;
+  name: string;
+  jobTitle?: string;
+  faceRegistered: boolean;
+  teamId: number;
+  teamName: string;
+}
+
+export interface SetupProjectCheckInMember {
+  employeeId: number;
+  employeeCode: string;
+  name: string;
+  jobTitle?: string;
+}
+
 export interface CheckInPayload {
   team_id: number;
   working_day: dayjs.Dayjs;
@@ -114,7 +132,13 @@ class FaceCheckController {
     getAllTimeKeepingsForDay: (team_id : number,working_day: any , options?: RequestOptions) => {
       // const day = working_day.format('YYYY-MM-DD');
       return HttpClient.get(`${checkInUrl}/api/CheckIn/team/${team_id}/report/daily?workingDay=${working_day}`, options);
-  },
+    },
+    getProjectCheckInMembers: (
+      projectId: number,
+      options?: RequestOptions,
+    ): import('rxjs').Observable<ProjectCheckInMemberStatus[]> => {
+      return HttpClient.get(`${checkInUrl}/api/FaceIdentity/project/${projectId}/checkin-members`, options);
+    },
   updateSalaryAdvance:(companyId: number, startDate: string, endDate: string) => {
     return HttpClient.get(
       `${checkInUrl}/api/CheckIn/attendance/company/external/${companyId}/report/range?FromWorkingDay=${startDate}&ToWorkingDay=${endDate}
@@ -144,6 +168,32 @@ class FaceCheckController {
     },
     approvedTimeKeepingForMonth: (input:ApprovedTimeKeepingForMonth , option?: RequestOptions ) => {
       return HttpClient.post(`${checkInUrl}/api/CheckIn/attendance/month`, input, option);
+    },
+    setupProjectCheckInMembers: (
+      projectId: number,
+      teamId: number,
+      members: SetupProjectCheckInMember[],
+      options?: RequestOptions,
+    ): import('rxjs').Observable<ProjectCheckInMemberStatus[]> => {
+      return HttpClient.post(
+        `${checkInUrl}/api/FaceIdentity/project/${projectId}/checkin-members`,
+        { teamId, members },
+        options,
+      );
+    },
+  };
+
+  public Delete = {
+    removeProjectCheckInMember: (
+      projectId: number,
+      teamId: number,
+      faceIdentityId: string,
+      options?: RequestOptions,
+    ): import('rxjs').Observable<ProjectCheckInMemberStatus[]> => {
+      return HttpClient.delete(
+        `${checkInUrl}/api/FaceIdentity/project/${projectId}/checkin-members/team/${teamId}/face/${faceIdentityId}`,
+        options,
+      );
     },
   };
 }

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react';
 
 import { SearchOutlined } from '@ant-design/icons';
-import { Checkbox, Col, Input, Modal, PaginationProps, Row, Space, Table, TableProps, Typography } from 'antd';
+import { Checkbox, Col, Input, Modal, PaginationProps, Row, Select, Space, Table, TableProps, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -16,6 +16,7 @@ import {
 } from '@/common/define';
 import { useWindowSize } from '@/hooks';
 import { EmployeeResponse } from '@/services/EmployeeService';
+import { FaceCheckService, TeamsResponse } from '@/services/CheckInService';
 import { CreateProjectMemberPayload } from '@/services/ProjectService';
 import { getCurrentCompany } from '@/store/app';
 import { employeeActions, getEmployeeQueryParams, getEmployees } from '@/store/employee';
@@ -50,6 +51,9 @@ export const AddMemberToProject = () => {
   const roles = useAppSelector(getProjectRoles());
   const [selectedMembers, setSelectedMember] = useState<EmployeeResponse[]>([]);
   const [selectedRoles, setSelectedRoles] = useState<number[]>([]);
+  const [setupCheckIn, setSetupCheckIn] = useState(true);
+  const [checkInTeams, setCheckInTeams] = useState<TeamsResponse[]>([]);
+  const [checkInTeamId, setCheckInTeamId] = useState<number>();
   const projectMemberList = useAppSelector(getProjectMemberList());
 
   useEffect(() => {
@@ -61,6 +65,21 @@ export const AddMemberToProject = () => {
   useEffect(() => {
     setSearchStr(queryParams?.search);
   }, [queryParams]);
+
+  useEffect(() => {
+    if (!selectedProject) return;
+
+    const subscription = FaceCheckService.Get.fetchTeamsOfOperator(selectedProject.id).subscribe({
+      next: result => {
+        const activeTeams = (result || []).filter((team: TeamsResponse) => team.status === 1);
+        setCheckInTeams(activeTeams);
+        setCheckInTeamId(undefined);
+      },
+      error: error => Utils.errorHandling(error),
+    });
+
+    return () => subscription.unsubscribe();
+  }, [selectedProject]);
 
   useEffect(() => {
     dispatch(
@@ -96,7 +115,11 @@ export const AddMemberToProject = () => {
       createTime: dayjs().format(FormatDateAPI),
     }));
     if (selectedProject) {
-      dispatch(projectActions.createManyProjectMemberRequest({ members: input }));
+      dispatch(projectActions.createManyProjectMemberRequest({
+        members: input,
+        setupCheckIn,
+        teamId: setupCheckIn ? checkInTeamId : undefined,
+      }));
       return;
     }
     // todo: nếu khởi tạo dự án thì đẩy dữ liệu vào store, cho đến bước cuối cùng submit data
@@ -168,6 +191,7 @@ export const AddMemberToProject = () => {
       okText={t('createProject.projectMember.modal.add')}
       width={800}
       confirmLoading={isSaving}
+      okButtonProps={{ disabled: setupCheckIn && !checkInTeamId }}
     >
       <Row>
         <Space style={{ flex: 1 }}>
@@ -223,6 +247,22 @@ export const AddMemberToProject = () => {
           </Checkbox.Group>
         </Col>
       </Row>
+      <Checkbox
+        checked={setupCheckIn}
+        onChange={event => setSetupCheckIn(event.target.checked)}
+        style={{ marginTop: 12 }}
+      >
+        Đồng thời thiết lập các nhân sự này vào Báo cáo chấm công
+      </Checkbox>
+      {setupCheckIn && (
+        <Select
+          value={checkInTeamId}
+          placeholder="Chọn tổ đội chấm công"
+          style={{ width: '100%', marginTop: 8 }}
+          options={checkInTeams.map(team => ({ value: team.id, label: team.name }))}
+          onChange={setCheckInTeamId}
+        />
+      )}
     </Modal>
   );
 };

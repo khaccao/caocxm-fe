@@ -124,7 +124,7 @@ export const UserLogin = () => {
           //[#20926][hoang_nm][26/11/2024] thêm modal Đổi mật khẩu
 
           title={t('Change Password')}
-          visible={isModalProfile}
+          open={isModalProfile}
           onCancel={handleCancel}
           footer={[
             <Button

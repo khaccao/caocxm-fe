@@ -1808,7 +1808,25 @@ export interface SubContractorDTO {
 // [22/05/2025][#22614][vy_tt]
 export interface EmployeeSalaryStatementSummaryDTO {
   operatorId: string;
+  projectId: number;
+  projectCode?: string;
   projectName: string;
+  employeeCount: number;
+  salaryMain: number;
+  salaryOT: number;
+  totalMoneyAdjustment: number;
+  totalSalary: number;
+  employees: EmployeeProjectSalaryDetailDTO[];
+}
+
+export interface EmployeeProjectSalaryDetailDTO {
+  employeeId: number;
+  employeeCode?: string;
+  shiftMainTime: number;
+  shiftOTTime: number;
+  salaryMain: number;
+  salaryOT: number;
+  totalMoneyAdjustment: number;
   totalSalary: number;
 }
 // [25/05/2025][#22707][vy_tt]

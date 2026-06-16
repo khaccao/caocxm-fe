@@ -29,6 +29,7 @@ const CapabilityProfile = lazyComponent(
 );
 const CompanyEmployee = lazyComponent(() => import('@/pages/CompanyEmployee'));
 const CompanyGroup = lazyComponent(() => import('@/pages/CompanyGroup'), 'CompanyGroup');
+const PayrollTeams = lazyComponent(() => import('@/pages/PayrollTeams'), 'PayrollTeams');
 const FileUpload = lazyComponent(() => import('@/pages/Components'), 'FileUpload');
 const ViewFileNotOffice = lazyComponent(() => import('@/pages/Components'), 'ViewFileNotOffice');
 const ConstructionMagazine = lazyComponent(() => import('@/pages/ConstructionMagazine'));
@@ -326,19 +327,6 @@ export const projectRouters: MetaMenuAuthRouteObject[] = [
         path: '/projects/project-settings',
         auth: ['CaiDat.ThongTinChung.View', 'CaiDat.ThanhVien.View'],
       },
-      {
-        element: <Outlet />,
-        name: 'Employees',
-        path: '/projects/employees',
-        children: [
-          {
-            element: <Timekeeping />,
-            name: 'Check-in time',
-            path: '/projects/employees/check-in-time',
-            auth: ['ChamCong.View'],
-          },
-        ],
-      },
     ],
   },
 ];
@@ -381,6 +369,12 @@ export const routers: MetaMenuAuthRouteObject[] = [
         name: 'Projects',
         path: '/projects',
         children: projectRouters,
+      },
+      {
+        element: <Timekeeping />,
+        name: 'Check-in time',
+        path: '/projects/employees/check-in-time',
+        auth: ['ChamCong.View'],
       },
       {
         element: <Outlet />,
@@ -550,6 +544,12 @@ export const routers: MetaMenuAuthRouteObject[] = [
             name: 'Company group',
             path: '/employee/company-group',
             auth: ['CongTy.PhongBan.View'],
+          },
+          {
+            element: <PayrollTeams />,
+            name: 'Payroll teams',
+            path: '/employee/payroll-teams',
+            auth: ['CongTy.NhanSu.View'],
           },
         ],
       },

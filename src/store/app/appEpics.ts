@@ -38,12 +38,20 @@ const loginRequest$: RootEpic = action$ => {
                   return [
                     appActions.loginSuccess({ loginResponse, loginData: input }),
                     userActions.setUserPreferences(preferences),
+                    appActions.getEmployeeByContactRequest({
+                      phone: user.PhoneNumber,
+                      email: user.Email,
+                    }),
                   ];
                 }),
                 catchError(() => {
                   return [
                     appActions.loginSuccess({ loginResponse, loginData: input }),
                     userActions.setUserPreferences(undefined),
+                    appActions.getEmployeeByContactRequest({
+                      phone: user.PhoneNumber,
+                      email: user.Email,
+                    }),
                   ];
                 }),
               );

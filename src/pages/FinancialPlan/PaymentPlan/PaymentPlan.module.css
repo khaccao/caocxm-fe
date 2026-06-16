@@ -41,6 +41,110 @@
   margin-bottom: 16px;
 }
 
+.salarySummaryFilters {
+  margin-bottom: 10px;
+}
+
+.salarySummaryTable {
+  width: 100%;
+}
+
+.salarySummaryTable :global(.ant-table-container),
+.salarySummaryTable :global(table) {
+  width: 100% !important;
+}
+
+.salarySummaryTable :global(.ant-table-content) {
+  overflow-x: hidden !important;
+}
+
+.salarySummaryTable :global(.ant-table-cell) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.salarySummaryRow {
+  cursor: pointer;
+}
+
+.salarySummaryRow:hover > td {
+  background: #eef7ff !important;
+}
+
+.salarySummaryTotalRow > td {
+  background: #f5f7fa !important;
+  border-top: 2px solid #1677ff !important;
+  font-weight: 700;
+}
+
+.salarySummaryTotalRow > td:first-child {
+  font-size: 15px;
+}
+
+.salaryDetailTitle h4 {
+  margin: 0 !important;
+  font-size: 18px;
+}
+
+.salaryDetailContent {
+  padding-top: 4px;
+}
+
+.salaryDetailSummary {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  border: 1px solid #d9d9d9;
+  margin-bottom: 16px;
+}
+
+.salaryDetailSummary > div {
+  min-width: 0;
+  padding: 10px 12px;
+  border-right: 1px solid #d9d9d9;
+}
+
+.salaryDetailSummary > div:last-child {
+  border-right: 0;
+  background: #eef7ff;
+}
+
+.salaryDetailSummary span,
+.salaryDetailSummary strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.salaryDetailSummary span {
+  color: rgba(0, 0, 0, 0.58);
+  font-size: 12px;
+  margin-bottom: 3px;
+}
+
+.salaryDetailSummary strong {
+  font-size: 15px;
+  text-align: right;
+}
+
+.salaryDetailSearch {
+  width: 320px;
+  max-width: 100%;
+  margin-bottom: 12px;
+}
+
+.salaryDetailTable :global(.ant-table-cell) {
+  padding: 7px 8px !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.salaryDetailTable :global(.ant-table-thead > tr > th) {
+  background: #f5f7fa;
+  font-weight: 600;
+}
+
 .cellEditable {
   cursor: pointer;
   /* padding: 4px; */
@@ -114,6 +218,14 @@
   .actionBar {
     flex-wrap: wrap;
     margin-bottom: 12px;
+  }
+
+  .salaryDetailSummary {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .salaryDetailSummary > div {
+    border-bottom: 1px solid #d9d9d9;
   }
 }
 

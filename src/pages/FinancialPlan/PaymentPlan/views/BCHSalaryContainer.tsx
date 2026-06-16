@@ -16,14 +16,31 @@ interface Props {
   periodCode: string;
   body: number[];
   nameMap: Record<number, string>;
+  excludedEmployeeIds?: ReadonlySet<number>;
   tableRef?: React.RefObject<any>;
 }
 
-export default function BCHSalaryContainer({ orgId, group, month, periodCode, body, nameMap, tableRef }: Props) {
+export default function BCHSalaryContainer({
+  orgId,
+  group,
+  month,
+  periodCode,
+  body,
+  nameMap,
+  excludedEmployeeIds,
+  tableRef,
+}: Props) {
   const { loading, data: statements } = useSalaryData({ orgId, group, month, periodCode, body });
 
-  const analysis = useMemo(() => analyzeAggregatedStructure(statements || []), [statements]);
-  const records = useMemo(() => aggregateBCHPayrollData(statements || [], nameMap), [statements, nameMap]);
+  const visibleStatements = useMemo(
+    () => (statements || []).filter(statement => !excludedEmployeeIds?.has(statement.employeeId)),
+    [statements, excludedEmployeeIds],
+  );
+  const analysis = useMemo(() => analyzeAggregatedStructure(visibleStatements), [visibleStatements]);
+  const records = useMemo(
+    () => aggregateBCHPayrollData(visibleStatements, nameMap),
+    [visibleStatements, nameMap],
+  );
   const columns = useMemo(() => generateAggregatedBCHTableColumns(analysis), [analysis]);
 
   if (loading) {

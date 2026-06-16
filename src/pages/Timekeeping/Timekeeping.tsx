@@ -1,11 +1,17 @@
 /* eslint-disable import/order */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
-import { ExportOutlined, SearchOutlined } from '@ant-design/icons';
+import {
+  ExportOutlined,
+  SearchOutlined,
+  SortAscendingOutlined,
+  SortDescendingOutlined,
+} from '@ant-design/icons';
 import {
   Button,
   DatePicker,
   DatePickerProps,
+  Empty,
   Input,
   Modal,
   Radio,
@@ -20,16 +26,18 @@ import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { DataSet, Timeline, TimelineOptions } from 'vis-timeline/standalone';
 
-import { GlobalState } from '@/common/global';
+import { ProjectEmployeeDTO } from '@/common/define';
 import { WithPermission } from '@/hocs/PermissionHOC';
 import { useWindowSize } from '@/hooks';
-import { FaceCheckService, ShiftResponse, TeamsResponse } from '@/services/CheckInService';
-import { getCurrentCompany } from '@/store/app';
+import { CheckInProject, FaceCheckService, ShiftResponse, TeamsResponse } from '@/services/CheckInService';
+import { ProjectService } from '@/services/ProjectService';
+import { appActions, getCurrentCompany, getCurrentUser, getEmployeeDetails } from '@/store/app';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getLoading } from '@/store/loading';
 import { getModalVisible, showModal } from '@/store/modal';
+import { employeeActions, getEmployees } from '@/store/employee';
 import { getProjectList, getSelectedProject, projectActions } from '@/store/project';
-import { getCheckInData, getMembersByGroupCode, getSelectedCheckInDetail, getTeams, timekeepingActions } from '@/store/timekeeping';
+import { getCheckInData, getSelectedCheckInDetail, getTeams, timekeepingActions } from '@/store/timekeeping';
 import Utils from '@/utils';
 import { TimeKeepingByDate } from './Component/TimeKeepingByDate';
 import { TimeKeepingBymonth } from './Component/TimeKeepingBymonth';
@@ -47,6 +55,9 @@ interface FilterParams {
   shift_id?: number;
   filterString?: string;
 }
+
+type EmployeeNameSortOrder = 'asc' | 'desc';
+type ProjectViewScope = 'assigned' | 'all';
 
 export const TimelineSection = () => {
   const { t } = useTranslation(['common', 'faceck']);
@@ -69,6 +80,16 @@ export const TimelineSection = () => {
   const [checkInCount, setCheckInCount] = useState<number>(0);
   const [term, setTerm] = useState<string>('1');
   const [saveDatatableTime, setSaveDataTableTime] = useState(false);
+  const [employeeNameSortOrder, setEmployeeNameSortOrder] = useState<EmployeeNameSortOrder>('asc');
+  const [showTerminatedEmployees, setShowTerminatedEmployees] = useState(false);
+  const [projectViewScope, setProjectViewScope] = useState<ProjectViewScope>('assigned');
+
+  const getEmployeeNameForSort = (name?: string) => {
+    const fullName = String(name || '').trim();
+    const parts = fullName.split(/\s+/).filter(Boolean);
+    const givenName = parts.length > 0 ? parts[parts.length - 1] : '';
+    return { fullName, givenName };
+  };
 
   const teams = useAppSelector(getTeams());
   const checkIn = useAppSelector(getCheckInData());
@@ -77,11 +98,50 @@ export const TimelineSection = () => {
   const locationCheckInVisible = useAppSelector(getModalVisible('showLocationImgCheckIn'));
   const selectedProject = useAppSelector(getSelectedProject());
   const selectedCompany = useAppSelector(getCurrentCompany());
-  const membersOfBCH = useAppSelector(getMembersByGroupCode('BCH'));
-  const [projectSelected, setProjectSelected] = useState<number>(-1);
+  const currentUser = useAppSelector(getCurrentUser());
+  const currentEmployee = useAppSelector(getEmployeeDetails());
+  const employees = useAppSelector(getEmployees());
+  const [projectSelected, setProjectSelected] = useState<number>();
   const projectList = useAppSelector(getProjectList());
+  const [checkInProjects, setCheckInProjects] = useState<CheckInProject[]>([]);
+  const [checkInProjectsLoaded, setCheckInProjectsLoaded] = useState(false);
+  const [assignedProjects, setAssignedProjects] = useState<ProjectEmployeeDTO[]>([]);
+  const [assignedProjectsLoaded, setAssignedProjectsLoaded] = useState(false);
+
+  const assignedProjectIds = useMemo(
+    () => new Set(assignedProjects.map(project => project.projectId)),
+    [assignedProjects],
+  );
+  const showAllCheckInProjects = projectViewScope === 'all';
+  const availableProjects = useMemo(
+    () => checkInProjects
+      .filter(project => showAllCheckInProjects || assignedProjectIds.has(project.externalId))
+      .map(checkInProject => {
+        const project = projectList.find(item => item.id === checkInProject.externalId);
+        return {
+          id: checkInProject.externalId,
+          name: project?.name || checkInProject.name,
+        };
+      })
+      .sort((a, b) => a.name.localeCompare(b.name, 'vi', { sensitivity: 'base' })),
+    [assignedProjectIds, checkInProjects, projectList, showAllCheckInProjects],
+  );
+  const projectsReady = checkInProjectsLoaded && (showAllCheckInProjects || assignedProjectsLoaded);
+  const availableProjectIds = useMemo(
+    () => new Set(availableProjects.map(project => project.id)),
+    [availableProjects],
+  );
+  const selectedProjectId = selectedProject?.id;
+  const requestedProjectId = selectedProjectId || projectSelected;
+  const activeProjectId = requestedProjectId && availableProjectIds.has(requestedProjectId)
+    ? requestedProjectId
+    : undefined;
+  const isActiveProjectAllowed = Boolean(activeProjectId);
 
   const timelineRef = useRef<HTMLDivElement>(null);
+  const timelineInstanceRef = useRef<Timeline | null>(null);
+  const requestedProjectCompanyIdRef = useRef<number>();
+  const requestedEmployeeContactRef = useRef<string>();
   const terms = [
     {
       value: '1',
@@ -94,21 +154,95 @@ export const TimelineSection = () => {
   ];
 
   useEffect(() => {
-    if (projectList && projectList.length === 0) {
-      dispatch(projectActions.getProjectsByCompanyIdRequest(selectedCompany?.id));
+    const companyId = selectedCompany?.id;
+    if (companyId && requestedProjectCompanyIdRef.current !== companyId) {
+      requestedProjectCompanyIdRef.current = companyId;
+      dispatch(projectActions.getProjectsByCompanyIdRequest(companyId));
+      dispatch(employeeActions.getEmployeesRequest({
+        companyId,
+        params: { page: 1, pageSize: 10000 },
+      }));
     }
-  }, [projectList]);
+  }, [dispatch, selectedCompany?.id]);
 
   useEffect(() => {
-    if (timelineRef?.current) {
-      GlobalState.timeline = new Timeline(timelineRef.current, []);
+    if (currentEmployee?.id) {
+      return;
+    }
+
+    const email = currentUser?.Email;
+    const phone = currentUser?.PhoneNumber;
+    const contactKey = `${phone || ''}|${email || ''}`;
+    if ((email || phone) && requestedEmployeeContactRef.current !== contactKey) {
+      requestedEmployeeContactRef.current = contactKey;
+      dispatch(appActions.getEmployeeByContactRequest({ phone, email }));
+    }
+  }, [currentEmployee?.id, currentUser?.Email, currentUser?.PhoneNumber, dispatch]);
+
+  useEffect(() => {
+    if (!currentEmployee?.id) {
+      setAssignedProjects([]);
+      setAssignedProjectsLoaded(true);
+      return;
+    }
+
+    setAssignedProjectsLoaded(false);
+    const workingDay = dayjs().format('YYYY-MM-DD');
+    const subscription = ProjectService.Post.getEmployeeProjects(
+      [currentEmployee.id],
+      { search: { startTime: workingDay, endTime: workingDay } },
+    ).subscribe({
+      next: (assignments: ProjectEmployeeDTO[]) => {
+        setAssignedProjects(
+          (assignments || []).filter(assignment => assignment.employeeId === currentEmployee.id),
+        );
+      },
+      error: (error: unknown) => {
+        setAssignedProjects([]);
+        setAssignedProjectsLoaded(true);
+        Utils.errorHandling(error);
+      },
+      complete: () => setAssignedProjectsLoaded(true),
+    });
+
+    return () => subscription.unsubscribe();
+  }, [currentEmployee?.id]);
+
+  useEffect(() => {
+    if (!selectedCompany?.id) {
+      setCheckInProjects([]);
+      setCheckInProjectsLoaded(true);
+      return;
+    }
+
+    setCheckInProjectsLoaded(false);
+    const subscription = FaceCheckService.Get.fetchActiveProjects(`${selectedCompany.id}`).subscribe({
+      next: projects => setCheckInProjects(projects || []),
+      error: error => {
+        setCheckInProjects([]);
+        setCheckInProjectsLoaded(true);
+        Utils.errorHandling(error);
+      },
+      complete: () => setCheckInProjectsLoaded(true),
+    });
+
+    return () => subscription.unsubscribe();
+  }, [selectedCompany?.id]);
+
+  useEffect(() => {
+    if (timelineRef.current && !timelineInstanceRef.current) {
+      timelineInstanceRef.current = new Timeline(timelineRef.current, []);
     }
     return () => {
-      if (GlobalState.timeline) {
+      if (timelineInstanceRef.current) {
         dispatch(timekeepingActions.setTeams([]));
         // dispatch(timekeepingActions.setCheckInData(undefined)); // cần kiểm tra lại sau
-        if (option !== 'month') {
-          GlobalState.timeline.destroy();
+        const timeline = timelineInstanceRef.current;
+        timelineInstanceRef.current = null;
+        try {
+          timeline.destroy();
+        } catch {
+          // vis-timeline may throw when its DataSet was already detached.
         }
       }
     };
@@ -116,12 +250,15 @@ export const TimelineSection = () => {
   }, [timelineRef, option]);
 
   useEffect(() => {
-    // Lấy giá trị mặt định ở trung tâm SG operatorId = 2
-    const operatorId = selectedProject?.id ? selectedProject?.id : (projectSelected || 0);
-    dispatch(timekeepingActions.getTeamsOfOperatorRequest({ operatorId, accessToken }));
+    if (!checkInProjectsLoaded || !isActiveProjectAllowed || !activeProjectId) {
+      dispatch(timekeepingActions.setTeams([]));
+      return;
+    }
+
+    dispatch(timekeepingActions.getTeamsOfOperatorRequest({ operatorId: activeProjectId, accessToken }));
     dispatch(timekeepingActions.getMembersByGroupCodeRequest({ groupCode: 'BCH' }))
     // eslint-disable-next-line
-  }, [selectedProject, projectSelected, option]);
+  }, [activeProjectId, checkInProjectsLoaded, isActiveProjectAllowed, option]);
 
   useEffect(() => {
     if (teams.length > 0) {
@@ -138,22 +275,16 @@ export const TimelineSection = () => {
   }, [teams]);
 
   useEffect(() => {
-    if (queryParams.team_id && queryParams.working_day && projectSelected) {
+    if (queryParams.team_id && queryParams.working_day && activeProjectId) {
       const { team_id, working_day } = queryParams;
-      dispatch(timekeepingActions.getTimeKeepingOfTeamRequest({ team_id:  projectSelected === -1 ? -1 : team_id , working_day, accessToken }));
+      dispatch(timekeepingActions.getTimeKeepingOfTeamRequest({ team_id, working_day, accessToken }));
     }
     // eslint-disable-next-line
-  }, [queryParams, projectSelected]);
+  }, [queryParams, activeProjectId]);
 
   const generateDataGroup = (emp: any, index: any, groups: DataSet<any>, items: DataSet<any>) => {
     const dataGroup = { content: emp.name, id: emp.id, value: emp, index: index < 9 ? `0${index + 1}` : index + 1, className: '' };
-    if (filterParams.filterString) {
-      if (emp.name.toLocaleLowerCase().includes(filterParams.filterString.toLocaleLowerCase())) {
-        groups.add(dataGroup);
-      }
-    } else {
-      groups.add(dataGroup);
-    }
+    groups.add(dataGroup);
     emp.checkIn_List
       .filter((chkIn: any) => chkIn.shift_Id === filterParams.shift_id || filterParams.shift_id === 0)
       .forEach((chkIn: any, idx: number) => {
@@ -201,28 +332,43 @@ export const TimelineSection = () => {
       const items = new DataSet();
 
       // Lọc và gán danh sách check-in
-      const checkInList = [...checkIn.inSide_Team, ...checkIn.outSide_Team.map((x: any) => ({ ...x, outSite: true }))];
+      const terminatedEmployeeIds = new Set(
+        (employees?.results || [])
+          .filter(employee => employee.status === 8)
+          .map(employee => employee.id),
+      );
+      const checkInList = [
+        ...checkIn.inSide_Team,
+        ...checkIn.outSide_Team.map((x: any) => ({ ...x, outSite: true })),
+      ].filter(employee =>
+        showTerminatedEmployees || !terminatedEmployeeIds.has(employee.employeeId),
+      );
       // Tính tổng số nhân sự có dữ liệu chấm công
       const checkInCount = checkInList.filter(emp => emp.checkIn_List.length > 0).length;
       setCheckInCount(checkInCount); // Cập nhật số lượng nhân sự có dữ liệu chấm công
 
-      [...checkInList].sort(function (a, b) {
-        if (!membersOfBCH.length) {
-          return a.name - b.name;
-        }
-        const aFromBCH = membersOfBCH.find(member => member.id === a.employeeId);
-        const bFromBCH = membersOfBCH.find(member => member.id === b.employeeId);
+      const searchText = filterParams.filterString?.trim().toLocaleLowerCase('vi');
+      checkInList
+        .filter(emp => !searchText || String(emp.name || '').toLocaleLowerCase('vi').includes(searchText))
+        .sort((a, b) => {
+          const aName = getEmployeeNameForSort(a.name);
+          const bName = getEmployeeNameForSort(b.name);
 
-        if (aFromBCH && !bFromBCH) {
-          return 1;
-        }
-        else if (!aFromBCH && bFromBCH) {
-          return -1;
-        }
-        else {
-          return a.name - b.name;
-        }
-      }).forEach((emp: any, idx: any) => generateDataGroup(emp, idx, groups, items));
+          let comparison = aName.givenName.localeCompare(bName.givenName, 'vi', {
+            sensitivity: 'base',
+            numeric: true,
+          });
+
+          if (comparison === 0) {
+            comparison = aName.fullName.localeCompare(bName.fullName, 'vi', {
+              sensitivity: 'base',
+              numeric: true,
+            });
+          }
+
+          return employeeNameSortOrder === 'asc' ? comparison : -comparison;
+        })
+        .forEach((emp: any, idx: any) => generateDataGroup(emp, idx, groups, items));
 
       setTimelineData({ groups, items });
     }
@@ -231,7 +377,14 @@ export const TimelineSection = () => {
     }
 
     // eslint-disable-next-line
-  }, [checkIn, filterParams, option, membersOfBCH]);
+  }, [
+    checkIn,
+    filterParams,
+    option,
+    employeeNameSortOrder,
+    employees?.results,
+    showTerminatedEmployees,
+  ]);
 
   useEffect(() => {
     renderTimeline();
@@ -396,20 +549,16 @@ export const TimelineSection = () => {
       // zoomMin: 1000 * 60 * 60 * 24, // one day in milliseconds
     };
     const { groups, items } = timelineData;
-    if (GlobalState.timeline) {
-      GlobalState.timeline.setOptions(options);
-      GlobalState.timeline.setData({ groups, items });
+    let timeline = timelineInstanceRef.current;
+    if (timeline) {
+      timeline.setOptions(options);
+      timeline.setData({ groups, items });
     } else {
-      GlobalState.timeline = new Timeline(timelineRef.current, items, groups, options);
+      timeline = new Timeline(timelineRef.current, items, groups, options);
+      timelineInstanceRef.current = timeline;
     }
-    if (GlobalState.timeline) {
-      GlobalState.timeline.setOptions(options);
-      GlobalState.timeline.setData({ groups, items });
-    } else {
-      GlobalState.timeline = new Timeline(timelineRef.current, items, groups, options);
-    }
-    GlobalState.timeline.off('click'); // remove the click event
-    GlobalState.timeline.on('click', function (properties: any) {
+    timeline.off('click'); // remove the click event
+    timeline.on('click', function (properties: any) {
       if (!properties.group || !properties.item) {
         return;
       }
@@ -424,6 +573,9 @@ export const TimelineSection = () => {
     const groupContainers = timelineRef.current.getElementsByClassName('group-label-container');
     if (groupContainers.length > 0) {
       setTimeout(() => {
+        if (!timelineInstanceRef.current || !groupContainers[0] || !leftContainer) {
+          return;
+        }
         (groupContainers[0] as HTMLDivElement).style.width = leftContainer.clientWidth + 'px';
         if (groups.length === 0) {
           groupContainers[0].remove();
@@ -440,7 +592,7 @@ export const TimelineSection = () => {
       groupContainer.appendChild(groupIndexLabel);
 
       const groupNameLabel = document.createElement('div');
-      groupNameLabel.innerHTML = t('Employee');
+      groupNameLabel.innerHTML = `${t('Employee')} (${employeeNameSortOrder === 'asc' ? 'A-Z' : 'Z-A'})`;
       groupNameLabel.className = 'group-name-label';
       groupContainer.appendChild(groupNameLabel);
 
@@ -495,12 +647,21 @@ export const TimelineSection = () => {
 
   const onChangeTeam = (value: number | null) => {
     if (!value) {
-      setQueryParams(prev => ({ ...prev, team_id: undefined }));
+      setQueryParams(prev => prev.team_id === undefined
+        ? prev
+        : { ...prev, team_id: undefined });
+      setFilterParams(prev =>
+        prev.selectedTeam === undefined && prev.shifts.length === 0 && prev.shift_id === undefined
+          ? prev
+          : { ...prev, selectedTeam: undefined, shifts: [], shift_id: undefined },
+      );
       return;
     }
     const team = teams.find(x => x.id === value);
     if (team) {
-      setQueryParams(prev => ({ ...prev, team_id: projectSelected === -1 ? -1 : team.id }));
+      setQueryParams(prev => prev.team_id === team.id
+        ? prev
+        : { ...prev, team_id: team.id });
       const shifts: ShiftResponse[] = [
         { id: 0, name: `Cả ngày (${team.shifts?.length || 0} ca)`, startTime: '', endTime: '' },
         ...Utils.deepClone(team.shifts),
@@ -562,14 +723,45 @@ export const TimelineSection = () => {
       },
     );
   };
-  const onChangeProjectSelected = (value: number) => {
+  const onChangeProjectSelected = (value?: number) => {
     setProjectSelected(value);
+    setQueryParams(prev => ({ ...prev, team_id: undefined }));
+    setFilterParams(prev => ({
+      ...prev,
+      selectedTeam: undefined,
+      shifts: [],
+      shift_id: undefined,
+    }));
   };
   useEffect(() => {
-    if (selectedProject) {
-      setProjectSelected(selectedProject.id);
+    if (selectedProjectId && projectSelected !== selectedProjectId) {
+      setProjectSelected(selectedProjectId);
+      setQueryParams(prev => ({ ...prev, team_id: undefined }));
+      setFilterParams(prev => ({
+        ...prev,
+        selectedTeam: undefined,
+        shifts: [],
+        shift_id: undefined,
+      }));
     }
-  }, [selectedProject]);
+  }, [projectSelected, selectedProjectId]);
+
+  useEffect(() => {
+    if (
+      projectsReady
+      && !selectedProjectId
+      && projectSelected
+      && !availableProjectIds.has(projectSelected)
+    ) {
+      setProjectSelected(undefined);
+      setQueryParams(prev => ({ ...prev, team_id: undefined }));
+    }
+  }, [
+    availableProjectIds,
+    projectSelected,
+    projectsReady,
+    selectedProjectId,
+  ]);
 
   return (
     <>
@@ -582,15 +774,30 @@ export const TimelineSection = () => {
             </Typography.Title>
             <div style={{ paddingTop: 4 }}>
               {!selectedProject && (
-                <Select
-                  style={{ width: 150, marginLeft: 4, marginTop: 4, marginRight: 5 }}
-                  onChange={onChangeProjectSelected}
-                  options={[
-                    { label: `${tTime('All')} (${projectList?.length || 0} ${tTime('Project')})`, value: -1 },
-                    ...(projectList?.map(project => ({ label: project.name, value: Number(project.id) })) || [])
-                  ]}
-                  value={projectSelected || undefined}
-                />
+                <>
+                  <Radio.Group
+                    value={projectViewScope}
+                    onChange={e => setProjectViewScope(e.target.value)}
+                    style={{ marginLeft: 4, marginTop: 4, marginRight: 5, height: 32, lineHeight: '32px' }}
+                  >
+                    <Radio.Button value="assigned" style={{ height: 32, lineHeight: '30px' }}>Dự án được giao</Radio.Button>
+                    <Radio.Button value="all" style={{ height: 32, lineHeight: '30px' }}>Tất cả dự án</Radio.Button>
+                  </Radio.Group>
+                  <Select
+                    allowClear
+                    showSearch
+                    optionFilterProp="label"
+                    placeholder="Chọn công trình chấm công"
+                    style={{ width: 260, marginLeft: 4, marginTop: 4, marginRight: 5 }}
+                    onChange={onChangeProjectSelected}
+                    options={availableProjects.map(project => ({
+                      label: project.name,
+                      value: Number(project.id),
+                    }))}
+                    value={projectSelected || undefined}
+                    disabled={!projectsReady}
+                  />
+                </>
               )}
               <Radio.Group
                 value={option}
@@ -631,8 +838,9 @@ export const TimelineSection = () => {
                 style={{ width: 180, marginLeft: 4, marginTop: 4, marginRight: option === 'days' ? 0 : 5 }}
                 onChange={onChangeTeam}
                 options={teams.map(t => ({ label: t.name, value: t.id }))}
-                value={projectSelected === -1 ? -1 : queryParams.team_id}
-                disabled={!projectSelected || projectSelected === -1}
+                value={queryParams.team_id}
+                placeholder="Chọn tổ đội"
+                disabled={!isActiveProjectAllowed}
               />
 
               {option === 'days' ? (
@@ -642,13 +850,28 @@ export const TimelineSection = () => {
                     onChange={onChangeShift}
                     options={filterParams.shifts?.map(t => ({ label: t.label || t.name, value: t.id }))}
                     value={filterParams.shift_id}
+                    disabled={!queryParams.team_id}
                   />
                   <Input
                     placeholder={t('Search employee')}
                     allowClear
                     onChange={onSearchString}
                     suffix={filterParams.filterString ? null : <SearchOutlined />}
-                    style={{ width: 304, marginLeft: 4, marginTop: 4, marginRight: 10 }}
+                    style={{ width: 240, marginLeft: 4, marginTop: 4 }}
+                  />
+                  <Select<EmployeeNameSortOrder>
+                    aria-label="Sắp xếp tên nhân sự"
+                    title="Sắp xếp tên nhân sự"
+                    value={employeeNameSortOrder}
+                    onChange={setEmployeeNameSortOrder}
+                    suffixIcon={employeeNameSortOrder === 'asc'
+                      ? <SortAscendingOutlined />
+                      : <SortDescendingOutlined />}
+                    options={[
+                      { value: 'asc', label: 'Tên: A - Z' },
+                      { value: 'desc', label: 'Tên: Z - A' },
+                    ]}
+                    style={{ width: 140, marginLeft: 4, marginTop: 4, marginRight: 10 }}
                   />
                   <WithPermission policyKeys={['ChamCong.Report']} strategy='disable'>
                     <Button
@@ -668,7 +891,7 @@ export const TimelineSection = () => {
                     onClick={() => {
                       setSaveDataTableTime(true);
                     }}
-                    disabled={!projectSelected || projectSelected === -1}
+                    disabled={!isActiveProjectAllowed || !queryParams.team_id}
                   >
                     {t('Lưu')}
                   </Button>
@@ -676,10 +899,17 @@ export const TimelineSection = () => {
               )}
             </div>
           </Row>
-          {option === 'days' ? (
+          {projectsReady && availableProjects.length === 0 ? (
+            <Empty description={showAllCheckInProjects
+              ? 'Chưa có công trình đang thi công có thiết lập chấm công'
+              : 'Bạn chưa được phân công vào công trình đang thi công có thiết lập chấm công'} />
+          ) : selectedProject && !isActiveProjectAllowed && projectsReady ? (
+            <Empty description="Công trình này chưa có tổ đội và ca chấm công đang hoạt động" />
+          ) : !activeProjectId ? (
+            <Empty description="Chọn công trình để xem dữ liệu chấm công" />
+          ) : option === 'days' ? (
             <Spin spinning={isLoading} size="large">
               <TimeKeepingByDate
-                language={language}
                 t={t}
                 timelineRef={timelineRef}
                 checkInDetail={checkInDetail}
@@ -688,6 +918,8 @@ export const TimelineSection = () => {
                 onCloseDetailPanel={onCloseDetailPanel}
                 openDetailPanel={openDetailPanel}
                 checkInCount={checkInCount} // Truyền checkInCount vào
+                showTerminatedEmployees={showTerminatedEmployees}
+                onShowTerminatedEmployeesChange={setShowTerminatedEmployees}
                 teams={teams}
                 onChangeTeam={onChangeTeam}
               />

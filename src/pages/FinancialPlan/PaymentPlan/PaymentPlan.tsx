@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import React, { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { Button, DatePicker, message, Modal, Select, Space, Spin, Tabs } from 'antd';
+import { Button, DatePicker, message, Modal, Select, Space, Spin, Switch, Tabs, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -42,6 +42,7 @@ export default function PaymentPlan(): React.JSX.Element {
   const defaultOrg = useAppSelector(getDefaultOrganization());
 
   const [month, setMonth] = useState(dayjs());
+  const [showTerminatedEmployees, setShowTerminatedEmployees] = useState(false);
   const [activeKey, setActiveKey] = useState<string>(EFinancialPlan.KeHoachThanhToan05);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({
     [EFinancialPlan.KeHoachThanhToan05]: '3',
@@ -95,8 +96,18 @@ export default function PaymentPlan(): React.JSX.Element {
     [employees?.results, BCHemployees],
   );
 
-  const NVEmployeeIds = useMemo(() => NVemployees.map(e => e.id), [NVemployees]);
-  const BCHEmployeeIds = useMemo(() => BCHemployees.map(e => e.id), [BCHemployees]);
+  const activeNVEmployeeIds = useMemo(
+    () => NVemployees.filter(employee => employee.status !== 8).map(employee => employee.id),
+    [NVemployees],
+  );
+  const activeBCHEmployeeIds = useMemo(
+    () => BCHemployees.filter(employee => employee.status !== 8).map(employee => employee.id),
+    [BCHemployees],
+  );
+  const terminatedEmployeeIds = useMemo(
+    () => new Set((employees?.results || []).filter(employee => employee.status === 8).map(employee => employee.id)),
+    [employees?.results],
+  );
 
   // TODO: Các bước xử lý bảng lương
   // 1. Call API lấy bảng lương
@@ -342,7 +353,7 @@ export default function PaymentPlan(): React.JSX.Element {
           employeeActions.updatePerSalary({
             companyId: defaultOrg?.guid,
             periodCode,
-            body: periodCode === ePeriodCode.PERIODCODEBCH? BCHEmployeeIds : NVEmployeeIds,
+            body: periodCode === ePeriodCode.PERIODCODEBCH ? activeBCHEmployeeIds : activeNVEmployeeIds,
             workingDay,
           }),
         );
@@ -404,6 +415,14 @@ export default function PaymentPlan(): React.JSX.Element {
                 onChange={m => m && setMonth(m)}
                 format="YYYY-MM"
               />
+              <Space size={6}>
+                <Switch
+                  size="small"
+                  checked={showTerminatedEmployees}
+                  onChange={setShowTerminatedEmployees}
+                />
+                <Typography.Text>Hiển thị đã nghỉ việc</Typography.Text>
+              </Space>
             </div>
 
             {!isSalarySummary ? (
@@ -471,8 +490,9 @@ export default function PaymentPlan(): React.JSX.Element {
             group="NV"
             month={month}
             periodCode={ePeriodCode.PERIODCODEDAY5}
-            body={NVEmployeeIds}
+            body={activeNVEmployeeIds}
             nameMap={nameMap}
+            excludedEmployeeIds={showTerminatedEmployees ? undefined : terminatedEmployeeIds}
             typeEFinancialPlan={EFinancialPlan.KeHoachThanhToan05}
           />
         )}
@@ -484,8 +504,9 @@ export default function PaymentPlan(): React.JSX.Element {
             group="BCH"
             month={month}
             periodCode={ePeriodCode.PERIODCODEBCH}
-            body={BCHEmployeeIds}
+            body={activeBCHEmployeeIds}
             nameMap={nameMap}
+            excludedEmployeeIds={showTerminatedEmployees ? undefined : terminatedEmployeeIds}
           />
         )}
 
@@ -505,6 +526,7 @@ export default function PaymentPlan(): React.JSX.Element {
             BCHperiodCode={ePeriodCode.PERIODCODEBCH}
             NVperiodCode={ePeriodCode.PERIODCODEDAY5}
             month={month}
+            includeTerminatedEmployees={showTerminatedEmployees}
           />
         )}
 
@@ -515,8 +537,9 @@ export default function PaymentPlan(): React.JSX.Element {
             group="NV"
             month={month}
             periodCode={ePeriodCode.PERIODCODEDAY20}
-            body={NVEmployeeIds}
+            body={activeNVEmployeeIds}
             nameMap={nameMap}
+            excludedEmployeeIds={showTerminatedEmployees ? undefined : terminatedEmployeeIds}
             typeEFinancialPlan={EFinancialPlan.KeHoachThanhToan20}
           />
         )}
@@ -537,6 +560,7 @@ export default function PaymentPlan(): React.JSX.Element {
             BCHperiodCode={ePeriodCode.PERIODCODEBCH}
             NVperiodCode={ePeriodCode.PERIODCODEDAY20}
             month={month}
+            includeTerminatedEmployees={showTerminatedEmployees}
           />
         )}
       </Suspense>

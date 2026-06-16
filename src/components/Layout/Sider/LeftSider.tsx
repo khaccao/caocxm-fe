@@ -347,6 +347,11 @@ export const LeftSider = (props: SiderProps) => {
           key: '/employee/company-group',
           auth: ['CongTy.PhongBan.View'],
         },
+        {
+          label: 'Tổ đội tính lương',
+          key: '/employee/payroll-teams',
+          auth: ['CongTy.NhanSu.View'],
+        },
       ],
     },
     {

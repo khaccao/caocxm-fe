@@ -498,10 +498,13 @@ const getEmployeeSalaryStatement$: RootEpic = (action$, state$) => {
               employeeActions.setEmployeeSalaryStatement({ data: result, group }),
               stopLoading({ key: 'getEmployeeSalaryStatement' }),
             ]),
-            catchError(error => of(
-              employeeActions.setEmployeeSalaryStatement({ data: [], group }),
-              stopLoading({ key: 'getEmployeeSalaryStatement' }),
-            )),
+            catchError(error => {
+              Utils.errorHandling(error);
+              return of(
+                employeeActions.setEmployeeSalaryStatement({ data: [], group }),
+                stopLoading({ key: 'getEmployeeSalaryStatement' }),
+              );
+            }),
           )
       );
     }),
@@ -545,12 +548,13 @@ const getEmployeeSalaryStatementSummary$: RootEpic = (action$, state$) => {
             employeeActions.setEmployeeSalaryStatementSummary({ data: result, group }),
             stopLoading({ key: 'getEmployeeSalaryStatementSummary' }),
           ]),
-          catchError(error =>
-            of(
+          catchError(error => {
+            Utils.errorHandling(error);
+            return of(
               employeeActions.setEmployeeSalaryStatementSummary({ data: [], group }),
               stopLoading({ key: 'getEmployeeSalaryStatementSummary' }),
-            ),
-          ),
+            );
+          }),
         ),
       );
     }),
@@ -577,8 +581,8 @@ const updatePerSalaryRequest$: RootEpic = (action$, state$) => {
             ]
           }),
           catchError(error => {
-            console.error('Cập nhật dữ liệu không thành công', error);
-            return [];
+            Utils.errorHandling(error);
+            return of(stopLoading({ key: 'updatePerSalary' }));
           }),
         ),
       );

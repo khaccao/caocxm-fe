@@ -88,6 +88,28 @@ const issueServiceProxy = Object.fromEntries(
   ]),
 );
 
+const localCoreRoutes = [
+  'api/Project',
+  'api/Employee',
+  'api/Team',
+  'Project_Employee',
+  'Group',
+  'EmployeesGroup',
+  'Team_Employee',
+  'Team_Shift',
+];
+
+const localCoreProxy = Object.fromEntries(
+  localCoreRoutes.map(route => [
+    `/cxm/${route}`,
+    {
+      target: 'http://localhost:8080',
+      changeOrigin: true,
+      rewrite: requestPath => requestPath.replace(/^\/cxm/, ''),
+    },
+  ]),
+);
+
 export default defineConfig({
   plugins: [react()],
   resolve: {
@@ -102,6 +124,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       ...issueServiceProxy,
+      ...localCoreProxy,
       '/identity': {
         target: 'https://sit.cxm.hicas.vn',
         changeOrigin: true,

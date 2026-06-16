@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { DeleteOutlined } from '@ant-design/icons';
-import { Button, Input, Modal, Popconfirm, Select, Space, Table, Tag, Typography } from 'antd';
+import { Button, Input, Modal, Popconfirm, Select, Space, Switch, Table, Tag, Typography } from 'antd';
 
 import {
   FaceCheckService,
@@ -10,6 +10,9 @@ import {
   TeamsResponse,
 } from '@/services/CheckInService';
 import { useAppSelector } from '@/store/hooks';
+import { getCurrentCompany } from '@/store/app';
+import { employeeActions, getEmployees } from '@/store/employee';
+import { useAppDispatch } from '@/store/hooks';
 import { getProjectMembers, getSelectedProject } from '@/store/project';
 import Utils from '@/utils';
 
@@ -25,6 +28,7 @@ interface CheckInSetupMember {
   code: string;
   name: string;
   jobTitle?: string;
+  terminated?: boolean;
 }
 
 export const SetupCheckInMembersModal = ({
@@ -35,7 +39,11 @@ export const SetupCheckInMembersModal = ({
 }: SetupCheckInMembersModalProps) => {
   const selectedProject = useAppSelector(getSelectedProject());
   const projectMembers = useAppSelector(getProjectMembers());
+  const employees = useAppSelector(getEmployees());
+  const company = useAppSelector(getCurrentCompany());
+  const dispatch = useAppDispatch();
   const [search, setSearch] = useState('');
+  const [showTerminatedEmployees, setShowTerminatedEmployees] = useState(false);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [teams, setTeams] = useState<TeamsResponse[]>([]);
   const [selectedTeamId, setSelectedTeamId] = useState<number>();
@@ -50,6 +58,9 @@ export const SetupCheckInMembersModal = ({
 
   const members = useMemo(() => {
     const memberByEmployeeKey = new Map<string, CheckInSetupMember>();
+    const employeeStatusById = new Map(
+      (employees?.results || []).map(employee => [employee.id, employee.status]),
+    );
     const getEmployeeKey = (employeeId: number, code?: string) => {
       const normalizedCode = `${code || ''}`.trim().toLocaleLowerCase('vi');
       return normalizedCode ? `code:${normalizedCode}` : `id:${employeeId}`;
@@ -61,6 +72,7 @@ export const SetupCheckInMembersModal = ({
         code: member.code,
         name: member.name,
         jobTitle: member.roleName || undefined,
+        terminated: employeeStatusById.get(member.employeeId) === 8,
       });
     });
 
@@ -72,19 +84,30 @@ export const SetupCheckInMembersModal = ({
           code: member.employeeCode,
           name: member.name,
           jobTitle: member.jobTitle,
+          terminated: employeeStatusById.get(member.employeeId) === 8,
         });
       }
     });
 
     const keyword = search.trim().toLocaleLowerCase('vi');
-    const source = Array.from(memberByEmployeeKey.values());
+    const source = Array.from(memberByEmployeeKey.values())
+      .filter(member => showTerminatedEmployees || !member.terminated);
     if (!keyword) return source;
 
     return source.filter(member =>
       member.name?.toLocaleLowerCase('vi').includes(keyword)
       || member.code?.toLocaleLowerCase('vi').includes(keyword),
     );
-  }, [checkInMembers, projectMembers, search]);
+  }, [checkInMembers, employees?.results, projectMembers, search, showTerminatedEmployees]);
+
+  useEffect(() => {
+    if (!open || !company?.id) return;
+
+    dispatch(employeeActions.getEmployeesRequest({
+      companyId: company.id,
+      params: { page: 1, pageSize: 10000 },
+    }));
+  }, [company?.id, dispatch, open]);
 
   const getConfiguredMembership = (member: CheckInSetupMember) => {
     const employeeCode = `${member.code || ''}`.trim().toLocaleLowerCase('vi');
@@ -211,6 +234,14 @@ export const SetupCheckInMembersModal = ({
         onChange={event => setSearch(event.target.value)}
         style={{ marginBottom: 12 }}
       />
+      <Space size={6} style={{ marginBottom: 12 }}>
+        <Switch
+          size="small"
+          checked={showTerminatedEmployees}
+          onChange={setShowTerminatedEmployees}
+        />
+        <Typography.Text>Hiển thị nhân sự đã nghỉ việc</Typography.Text>
+      </Space>
 
       <Table<CheckInSetupMember>
         rowKey="employeeId"
@@ -221,7 +252,7 @@ export const SetupCheckInMembersModal = ({
           selectedRowKeys,
           onChange: keys => setSelectedRowKeys(keys),
           getCheckboxProps: record => ({
-            disabled: Boolean(getConfiguredMembership(record)),
+            disabled: Boolean(getConfiguredMembership(record)) || Boolean(record.terminated),
           }),
         }}
         columns={[
@@ -231,7 +262,9 @@ export const SetupCheckInMembersModal = ({
             title: 'Trạng thái',
             width: 150,
             render: (_, record) =>
-              getConfiguredMembership(record) ? (
+              record.terminated ? (
+                <Tag color="error">Đã nghỉ việc</Tag>
+              ) : getConfiguredMembership(record) ? (
                 <Tag color="success">Đã thuộc tổ đội</Tag>
               ) : (
                 <Tag>Chưa thuộc tổ đội</Tag>

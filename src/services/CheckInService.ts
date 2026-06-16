@@ -35,6 +35,12 @@ export interface ProjectCheckInMemberStatus {
   teamName: string;
 }
 
+export interface CheckInProject {
+  externalId: number;
+  name: string;
+  activeTeamCount: number;
+}
+
 export interface SetupProjectCheckInMember {
   employeeId: number;
   employeeCode: string;
@@ -104,6 +110,12 @@ class FaceCheckController {
   public Get = {
     fetchTeamsOfOperator: (operatorId: number, options?: RequestOptions) => {
       return HttpClient.get(`${checkInUrl}/api/checkin/operator/${operatorId}/teams`, options);
+    },
+    fetchActiveProjects: (
+      companyId: string,
+      options?: RequestOptions,
+    ): import('rxjs').Observable<CheckInProject[]> => {
+      return HttpClient.get(`${checkInUrl}/api/checkin/company/${companyId}/projects`, options);
     },
     fetchTimeKeepingOfTeam: (params: CheckInPayload, options?: RequestOptions) => {
       const { team_id, working_day } = params;

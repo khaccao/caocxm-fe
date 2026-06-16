@@ -18,11 +18,13 @@ export const CompanyEmployee = () => {
   const params = useAppSelector(getEmployeeQueryParams());
 
   useEffect(() => {
+    if (!company?.id) return;
+
     dispatch(
       employeeActions.getEmployeesRequest({ companyId: company.id, params: { ...params, page: 1, search: undefined, pageSize: 10000 } }),
     );
     // eslint-disable-next-line
-  }, [company]);
+  }, [company?.id]);
 
   return (
     <div className={styles.mainContainer}>  

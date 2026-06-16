@@ -5,7 +5,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 
 import { persitConfigKey } from '@/common/define';
 import { StoreContext } from '@/context';
-import { injectStore } from '@/services/HttpClient';
+import { injectStore, setToken } from '@/services/HttpClient';
 import { initialStoreCongig } from '@/store';
 import configureStore from '@/store/configureStore';
 
@@ -20,13 +20,25 @@ export const ReduxStoreProvider = ({ children }: ReduxStoreProviderProps) => {
 
   const changeStoreConfig = React.useCallback((config: any) => {
     localStorage.setItem(persitConfigKey, JSON.stringify(config));
-    setStoreConfig(configureStore(config));
+    const nextStoreConfig = configureStore(config);
+    injectStore(nextStoreConfig.store);
+    setStoreConfig(nextStoreConfig);
   }, []);
+
+  const restoreHttpClientSession = React.useCallback(() => {
+    injectStore(storeConfig.store);
+    const token = storeConfig.store.getState().app.auth?.token;
+    setToken(token ?? null);
+  }, [storeConfig.store]);
 
   return (
     <StoreContext.Provider value={{ changeStoreConfig }}>
       <StoreProvider store={storeConfig.store}>
-        <PersistGate loading={null} persistor={storeConfig.persistor}>
+        <PersistGate
+          loading={null}
+          persistor={storeConfig.persistor}
+          onBeforeLift={restoreHttpClientSession}
+        >
           {children}
         </PersistGate>
       </StoreProvider>

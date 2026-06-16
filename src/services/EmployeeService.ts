@@ -61,7 +61,8 @@ export interface ContactResponse {
 export interface CreateEmployeePayload {
   companyId: number;
   companyGuid: string;
-  employeeCode: string;
+  employeeCode?: string;
+  employeeCodePrefix?: 'NVH' | 'BCH' | 'CN';
   dateOfBirth: string;
   startDate: string;
   endDate: string;

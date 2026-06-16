@@ -26,9 +26,11 @@ export function useSalaryData({ orgId, group, month, periodCode, body }: UseSala
   );
 
   useEffect(() => {
-    if (!orgId) return;
-    const dayWorking = periodCode === ePeriodCode.PERIODCODEDAY5 ? '20' : '05';
-    const workingDay = month.date(+dayWorking).format('YYYY-MM-DD');
+    // Wait until Issue Service has supplied the employee ids.
+    if (!orgId || body.length === 0) return;
+
+    const dayWorking = periodCode === ePeriodCode.PERIODCODEDAY5 ? 20 : 5;
+    const workingDay = month.date(dayWorking).format('YYYY-MM-DD');
     const type = group === 'BCH' ? 1 : 0;
 
     dispatch(

@@ -21,6 +21,7 @@ interface Props {
   body: number[];
   nameMap: Record<number, string>;
   typeEFinancialPlan: EFinancialPlan;
+  excludedEmployeeIds?: ReadonlySet<number>;
   tableRef?: React.RefObject<any>;
 }
 function normalizeProjectFields(records: any[]) {
@@ -47,11 +48,28 @@ function normalizeProjectFields(records: any[]) {
   return records;
 }
 
-export default function PayrollTableContainer({ orgId, group, month, periodCode, body, nameMap, typeEFinancialPlan, tableRef }: Props) {
+export default function PayrollTableContainer({
+  orgId,
+  group,
+  month,
+  periodCode,
+  body,
+  nameMap,
+  typeEFinancialPlan,
+  excludedEmployeeIds,
+  tableRef,
+}: Props) {
   const { loading, data: statements } = useSalaryData({ orgId, group, month, periodCode, body });
   const projectList = useAppSelector(getProjectList());
-  const analysis = useMemo(() => analyzeAggregatedStructure(statements || [], projectList), [statements]);
-  const records = useMemo(() => aggregatePayrollData(statements || [], nameMap, { typeEFinancialPlan }), [statements, nameMap, typeEFinancialPlan]);
+  const visibleStatements = useMemo(
+    () => (statements || []).filter(statement => !excludedEmployeeIds?.has(statement.employeeId)),
+    [statements, excludedEmployeeIds],
+  );
+  const analysis = useMemo(() => analyzeAggregatedStructure(visibleStatements, projectList), [visibleStatements, projectList]);
+  const records = useMemo(
+    () => aggregatePayrollData(visibleStatements, nameMap, { typeEFinancialPlan }),
+    [visibleStatements, nameMap, typeEFinancialPlan],
+  );
   const normalizedRecords = normalizeProjectFields(records);
   const columns = useMemo(() => generateAggregatedTableColumns(analysis), [analysis]);
   if (loading) {

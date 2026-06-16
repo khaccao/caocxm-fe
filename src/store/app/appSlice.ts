@@ -96,6 +96,12 @@ const appSlice = createSlice({
     logout: (state, action: PayloadAction<{ callback?: VoidFunction }>) => {
       const { callback } = action.payload;
       setToken(null);
+      state.auth = undefined;
+      state.grantedPolicies = {};
+      state.selectedEmployeeDetails = undefined;
+      state.DanhSachUseriis = undefined;
+      state.username = '';
+      state.password = '';
       if (callback) {
         callback();
       }

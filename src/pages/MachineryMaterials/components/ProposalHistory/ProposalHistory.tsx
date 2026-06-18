@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import React, { useEffect, useState } from 'react';
 
-import { eTypeVatTu, eTypeVatTuMayMoc, madvcs } from '@/common/define';
+import { accountingInvoice, eTypeVatTu, eTypeVatTuMayMoc, madvcs } from '@/common/define';
 import { maKhoTongMM, maKhoTongVT } from '@/environment';
 import { usePermission } from '@/hooks';
 import { ChiTietDeNghiMuaHangDTO } from '@/services/AccountingInvoiceService';
@@ -15,12 +15,14 @@ import {
 import { getCurrentUser, getgetUserIIS } from '@/store/app';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { issueActions } from '@/store/issue';
+import { getLoading } from '@/store/loading';
 import { getSelectedProject } from '@/store/project';
 import { RootState } from '@/store/types';
 import { getUserOrganizations } from '@/store/user';
 import Utils from '@/utils';
+import { ApprovalNotificationMode } from '@/utils/approvalNotification';
 import { DeleteOutlined, EditOutlined, PrinterOutlined } from '@ant-design/icons';
-import { Badge, Button, ButtonProps, Card, Empty, Modal, Space, Typography } from 'antd';
+import { Badge, Button, ButtonProps, Card, Empty, Modal, Space, Spin, Typography } from 'antd';
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
@@ -503,9 +505,10 @@ const ProposalCard: React.FC<{
 
 type ProposalListProps = {
   type: eTypeVatTuMayMoc;
+  approvalMode?: ApprovalNotificationMode;
 };
 
-const ProposalList = ({ type }: ProposalListProps) => {
+const ProposalList = ({ type, approvalMode = 'mine' }: ProposalListProps) => {
   const location = useLocation();
   const { t } = useTranslation();
   const danhsachduyetmuahang = useAppSelector(getDanhSachDuyetMuaHang());
@@ -516,6 +519,7 @@ const ProposalList = ({ type }: ProposalListProps) => {
   const [DanhSachVatTu, setDanhSachVatTu] = useState(products.filter(item => item.productType !== 2));
   const [DanhSachMayMoc, setDanhSachMayMoc] = useState(products.filter(item => item.productType === 2));
   const userIIS = useAppSelector(getgetUserIIS());
+  const isProposalLoading = useAppSelector(getLoading(accountingInvoice.GetDanhSachDuyetMuaHang));
   const dispatch = useAppDispatch();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
   //[10/1/2025][ngoc_td] trong trang chính hiển thị danh sách vật tư máy móc của toàn bộ kho
@@ -666,19 +670,24 @@ const ProposalList = ({ type }: ProposalListProps) => {
   };
 
   const rawUser = userIIS?.[0];
-  const userCap = extractApproveLevel(rawUser?.un);
+  const userCap = rawUser?.capDuyetChi ?? extractApproveLevel(rawUser?.un);
   const hasApprovePermission = approveGranted;
 
   const canUserSee = (p: ProposalData) =>
     hasApprovePermission && canApproveByLevel(p, userCap);
 
-  const ColoredDataWithApprovable = ColoredData.map(d => ({
-    ...d,
-    approvableCount: d.proposals.filter(canUserSee).length,
-  }));
+  const ColoredDataWithApprovable = ColoredData.map(d => {
+    const visibleProposals = approvalMode === 'all' ? d.proposals : d.proposals.filter(canUserSee);
+    return {
+      ...d,
+      proposals: visibleProposals,
+      approvableCount: d.proposals.filter(canUserSee).length,
+    };
+  }).filter(d => d.proposals.length > 0);
 
   return (
-    <div>
+    <Spin spinning={isProposalLoading} tip="Đang tải đề xuất...">
+      <div style={{ minHeight: isProposalLoading ? 180 : undefined }}>
       {Array.isArray(ColoredDataWithApprovable) && ColoredDataWithApprovable.length > 0 ? (
         <div className={styles.proposalList}>
           {ColoredDataWithApprovable.map(dayData => (
@@ -722,7 +731,8 @@ const ProposalList = ({ type }: ProposalListProps) => {
       ) : (
         <Empty description={t('noProposals')} />
       )}
-    </div>
+      </div>
+    </Spin>
   );
 };
 

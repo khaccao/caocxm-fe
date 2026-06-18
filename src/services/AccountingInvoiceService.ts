@@ -817,6 +817,9 @@ class AccountingInvoiceController {
       // madvcs, ngay_de_nghi
       return HttpClient.get(`${accountingInvoiceURL}/api/GetDanhSachPhieuDeNghiMuaHang`, options);
     },
+    GetMaterialApprovalNotifications: (options?: RequestOptions): Observable<any> => {
+      return HttpClient.get(`${apiUrl}/api/MaterialApprovalNotification/purchase-proposals`, options);
+    },
     GetAccountingMapping: (type: number, options?: RequestOptions): Observable<AccountingMappingDTO[]> => {
       // Lấy danh sách AccountingMapping theo loại nghiệp vụ
       return HttpClient.get(`${apiUrl}/AccountingMapping?type=${type}`, options);

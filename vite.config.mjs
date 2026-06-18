@@ -30,6 +30,7 @@ const issueServiceRoutes = [
   'api/Cxm',
   'api/ImportConfig',
   'api/Issue',
+  'api/MaterialApprovalNotification',
   'api/Pcvm',
   'AssigneeMachineQuota',
   'AssigneeMaterialQuota',

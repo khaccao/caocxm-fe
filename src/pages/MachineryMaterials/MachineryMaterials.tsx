@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import { useEffect, useState } from 'react';
 
-import { Badge, Modal, TabsProps } from 'antd';
+import { Badge, Modal, Switch, TabsProps } from 'antd';
 import dayjs from 'dayjs';
 
 import { eTypeVatTu, eTypeVatTuMayMoc, madvcs } from '@/common/define';
@@ -11,15 +11,23 @@ import { AccountingInvoiceService, IBaoCaoXuatNhapTonDTO } from '@/services/Acco
 import {
   accountingInvoiceActions,
   getDanhSachDuyetMuaHang,
+  getDateRange,
   getProducts,
   getWareHouses
 } from '@/store/accountingInvoice';
-import { getCurrentCompany } from '@/store/app';
+import { getCurrentCompany, getgetUserIIS } from '@/store/app';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getTracker, issueActions } from '@/store/issue';
 import { getSelectedProject } from '@/store/project';
 import { RootState } from '@/store/types';
 import Utils from '@/utils';
+import {
+  ApprovalNotificationMode,
+  canUserApproveProposal,
+  getStoredApprovalNotificationMode,
+  isPendingApprovalProposal,
+  setStoredApprovalNotificationMode,
+} from '@/utils/approvalNotification';
 import { lastValueFrom } from 'rxjs';
 import MachineryMaterialsList from './components/MachineryMaterialsList';
 import NewMachineryMaterialList from './components/NewMachineryMaterialList';
@@ -40,6 +48,8 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
   const wareHouses = useAppSelector(getWareHouses());
   const trackers = useAppSelector(getTracker());
   const danhsachduyetmuahang = useAppSelector(getDanhSachDuyetMuaHang());
+  const dateRanges = useAppSelector(getDateRange());
+  const userIIS = useAppSelector(getgetUserIIS());
 
   const projectwareHouses = useAppSelector((state: RootState) => state.project.projectwarehouseResponse);
   //[10/1/2025][ngoc_td] nếu ở trang chủ, sẽ trả về danh sách phiếu đề nghị mua hàng của tất cả mã kho
@@ -66,6 +76,9 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
   });
   const dispatch = useAppDispatch();
   const [searchText, setSearchText] = useState('');
+  const [approvalNotificationMode, setApprovalNotificationMode] = useState<ApprovalNotificationMode>(
+    getStoredApprovalNotificationMode(),
+  );
 
   useEffect(() => {
     dispatch(accountingInvoiceActions.GetProducts({ params: {} }));
@@ -187,20 +200,23 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
     return ketQua;
   }
   useEffect(() => {
+    const startDate = dateRanges?.startDate || dayjs().subtract(30, 'day').format('YYYY-MM-DD');
+    const endDate = dateRanges?.endDate || dayjs().format('YYYY-MM-DD');
+
     dispatch(
       accountingInvoiceActions.GetDanhSachDuyetMuaHang({
         params: {
           madvcs: 'THUCHIEN',
-          ngay_de_nghi_tu_ngay: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
-          ngay_de_nghi_den_ngay: dayjs().format('YYYY-MM-DD'),
+          ngay_de_nghi_tu_ngay: startDate,
+          ngay_de_nghi_den_ngay: endDate,
           ma_kho: currentWarehouseCode,
         },
       }),
     );
     const formattedValues: IBaoCaoXuatNhapTonDTO = {
       madvcs: madvcs.KEHOACH,
-      tu_ngay: dayjs().subtract(30, 'day').format('YYYY-MM-DD'),
-      den_ngay: dayjs().format('YYYY-MM-DD'),
+      tu_ngay: startDate,
+      den_ngay: endDate,
       ma_kho: currentWarehouseCode,
       tk_no: '',
       tk_co: '',
@@ -214,7 +230,7 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
       }),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentWarehouseCode]);
+  }, [currentWarehouseCode, dateRanges]);
 
   useEffect(() => {
     const updateProposals = async () => {
@@ -230,9 +246,14 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
           [eTypeVatTuMayMoc.MayMoc]: 0,
         };
 
+        const userApprovalLevel = userIIS?.[0]?.capDuyetChi ?? 0;
         for (const proposal of danhsachduyetmuahang) {
-          const capDuyetHienTai = calculateCapDuyet(proposal);
-          if (capDuyetHienTai < proposal.capDuyet) {
+          const shouldCount =
+            approvalNotificationMode === 'all'
+              ? isPendingApprovalProposal(proposal)
+              : canUserApproveProposal(proposal, userApprovalLevel);
+
+          if (shouldCount) {
             const maVt = proposal.chiTietDeNghiMuaHang[0]?.ma_vt || '';
             const product = producsts.find(vt => vt.ma_vt === maVt);
             const maymoc = machineries.find(mm => mm.ma_vt === maVt);
@@ -293,7 +314,7 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
     };
     updateProposals();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [danhsachduyetmuahang, products]);
+  }, [danhsachduyetmuahang, products, approvalNotificationMode, userIIS]);
 
   let tabs: TabsProps['items'] = [];
 
@@ -312,7 +333,7 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
               Đề xuất cấp vật tư chính
             </Badge>
           ),
-          children: <ProposalHistory type={type} />,
+          children: <ProposalHistory type={type} approvalMode={approvalNotificationMode} />,
         },
         {
           key: '3',
@@ -338,7 +359,7 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
               Đề xuất cấp vật tư phụ
             </Badge>
           ),
-          children: <ProposalHistory type={type} />,
+          children: <ProposalHistory type={type} approvalMode={approvalNotificationMode} />,
         },
         {
           key: '3',
@@ -369,7 +390,7 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
               Đề xuất cấp máy móc - CCDC
             </Badge>
           ),
-          children: <ProposalHistory type={type} />,
+          children: <ProposalHistory type={type} approvalMode={approvalNotificationMode} />,
         },
         {
           key: '3',
@@ -417,6 +438,12 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
     setSearchText(value);
   };
 
+  const handleApprovalModeChange = (checked: boolean) => {
+    const nextMode: ApprovalNotificationMode = checked ? 'all' : 'mine';
+    setApprovalNotificationMode(nextMode);
+    setStoredApprovalNotificationMode(nextMode);
+  };
+
   const getPermissionKey = () => {
     let permissionKey = '';
     switch (type) {
@@ -437,6 +464,16 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
 
   const key = getPermissionKey();
   const isAddProposalGranted = usePermission([key]);
+  const proposalToolbarExtra = (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
+      <Switch
+        size="small"
+        checked={approvalNotificationMode === 'all'}
+        onChange={handleApprovalModeChange}
+      />
+      <span>Hiển thị tất cả phiếu chờ duyệt</span>
+    </div>
+  );
 
   return (
     <div>
@@ -446,10 +483,19 @@ export const MachineryMaterials = (props: MachineryMaterialsProps) => {
         onDownload={handleDownload}
         onSelectDate={handleSelectDate}
         onSearch={handleSearch}
+        proposalToolbarExtra={proposalToolbarExtra}
         addButtonProps={{
           disabled: !isAddProposalGranted,
         }}
       />
+      <div style={{ display: 'none' }}>
+        <Switch
+          size="small"
+          checked={approvalNotificationMode === 'all'}
+          onChange={handleApprovalModeChange}
+        />
+        <span>Hiển thị tất cả phiếu chờ duyệt</span>
+      </div>
       <Modal open={isModalVisible} onCancel={handleModalClose} footer={null} width={1250}>
         <NewMachineryMaterialList
           type={type}

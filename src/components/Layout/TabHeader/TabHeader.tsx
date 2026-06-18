@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 
 import { CheckOutlined, PlusOutlined } from '@ant-design/icons';
 import type { ButtonProps, TabsProps } from 'antd';
-import { Button, DatePicker, Input, Modal, Select, Space, Tabs } from 'antd';
+import { Button, DatePicker, Input, Modal, Select, Space, Spin, Tabs } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
@@ -28,6 +28,7 @@ interface TabHeaderProps {
   onSelectDate?: (dates: [Dayjs | null, Dayjs | null] | null) => void;
   onSearch?: (searchText: string) => void;
   addButtonProps?: ButtonProps;
+  proposalToolbarExtra?: React.ReactNode;
 }
 
 const TabHeader: React.FC<TabHeaderProps> = ({
@@ -38,6 +39,7 @@ const TabHeader: React.FC<TabHeaderProps> = ({
   onAddMorearise,
   onSearch,
   addButtonProps,
+  proposalToolbarExtra,
 }) => {
   const dispatch = useAppDispatch();
   const selectedProject = useAppSelector(getSelectedProject());
@@ -48,6 +50,7 @@ const TabHeader: React.FC<TabHeaderProps> = ({
   const [KeyPopup, setKeyPopup] = useState('1');
   const company = useAppSelector(getCurrentCompany());
   const isLoading = useAppSelector(getLoading(accountingInvoice.GetTonKho));
+  const isProposalLoading = useAppSelector(getLoading(accountingInvoice.GetDanhSachDuyetMuaHang));
   const dateRanges = useAppSelector(getDateRange());
   const dateFilterOptionsStore = useAppSelector(getDateFilterOptions());
   const [dateFilterOptions, setDateFilterOptions] = useState<any[]>([]);
@@ -167,6 +170,8 @@ const TabHeader: React.FC<TabHeaderProps> = ({
           endDate: end.format(FormatDateAPI),
         }),
       );
+
+      onSelectDate?.([start, end]);
     }
   };
 
@@ -231,12 +236,14 @@ const TabHeader: React.FC<TabHeaderProps> = ({
               )}
 
               {(activeTab === '2') && (
-                <Space direction="vertical" size={12} className={Style.datePicker}>
-                  {/* Use RangePicker for selecting a date range */}
-                  <RangePicker
-                    onChange={(dates) => handleDateChange(dates)}
-                    value={dateRange}
-                  />
+                <Space direction="horizontal" size={12} className={Style.datePicker}>
+                  {proposalToolbarExtra}
+                  <Spin spinning={isProposalLoading} size="small">
+                    <RangePicker
+                      onChange={(dates) => handleDateChange(dates)}
+                      value={dateRange}
+                    />
+                  </Spin>
                 </Space>
               )}
 
@@ -256,10 +263,12 @@ const TabHeader: React.FC<TabHeaderProps> = ({
                     options={dateFilterOptions}
                     onChange={handleDateOptionChange}
                   />
-                  <RangePicker
-                    onChange={(dates) => handleDateChange(dates)}
-                    value={dateRange}
-                  />
+                  <Spin spinning={isProposalLoading} size="small">
+                    <RangePicker
+                      onChange={(dates) => handleDateChange(dates)}
+                      value={dateRange}
+                    />
+                  </Spin>
                 </Space>
               )}
 

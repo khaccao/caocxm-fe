@@ -1,4 +1,4 @@
-/* eslint-disable import/order */
+﻿/* eslint-disable import/order */
 import { useEffect, useState } from 'react';
 
 import {
@@ -29,11 +29,12 @@ import { fullPermissionsRoles } from '@/hooks';
 import ProjectBg from '@/image/icon/project.png';
 import { AccountingInvoiceService } from '@/services/AccountingInvoiceService';
 import { accountingInvoiceActions, getProducts } from '@/store/accountingInvoice';
-import { appActions, getActiveMenu, getCurrentCompany, getGrantedPolicies, getUserRoles } from '@/store/app';
+import { appActions, getActiveMenu, getCurrentCompany, getGrantedPolicies, getUserRoles, getgetUserIIS } from '@/store/app';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getSelectedProject } from '@/store/project';
 import { RootState } from '@/store/types';
 import { getDefaultOrganization } from '@/store/user';
+import { APPROVAL_NOTIFICATION_MODE_EVENT, getStoredApprovalNotificationMode } from '@/utils/approvalNotification';
 import { getAuthMenuItems, groupByGroupId } from '@/utils';
 
 const { Sider } = Layout;
@@ -70,7 +71,7 @@ export const LeftSider = (props: SiderProps) => {
     }
     return {};
   }
-  // đếm số lượng object chưa được nhập đủ kho
+  // Đếm số lượng object chưa được nhập đủ kho
   const checkQuantities = (data: any): number => {
     let result = 0;
 
@@ -96,7 +97,7 @@ export const LeftSider = (props: SiderProps) => {
 
     return result;
   };
-  // phân loại các phiếu xem thuộc vật tư chính, vật tư phụ hay máy móc
+  // Phân loại các phiếu xem thuộc vật tư chính, vật tư phụ hay máy móc
   const getProductTypeFromData = (data: any): { VTC: any[][]; VTP: any[][]; MM: any[][] } => {
     const VTC: any[][] = [];
     const VTP: any[][] = [];
@@ -135,6 +136,7 @@ export const LeftSider = (props: SiderProps) => {
   const activeMenu = useAppSelector(getActiveMenu());
   const defaultOrganization = useAppSelector(getDefaultOrganization());
   const grantedPolicies = useAppSelector(getGrantedPolicies());
+  const userIIS = useAppSelector(getgetUserIIS());
 
   const userRoles = useAppSelector(getUserRoles());
   const isFullPermissions = fullPermissionsRoles.some(role => userRoles.includes(role));
@@ -168,10 +170,24 @@ export const LeftSider = (props: SiderProps) => {
   const [badgeCountVTC, setBadgeCountVTC] = useState(0);
   const [badgeCountVTP, setBadgeCountVTP] = useState(0);
   const [badgeCountMM, setBadgeCountMM] = useState(0);
+  const [approvalNotificationMode, setApprovalNotificationMode] = useState(getStoredApprovalNotificationMode());
 
   const company = useAppSelector(getCurrentCompany());
   const additionalCosts = useAppSelector((state: RootState) => state.accountingInvoice.AdditionalCosts) || [];
   const [badgeCountCPPS, setBadgeCountCPPS] = useState(0);
+
+  useEffect(() => {
+    const syncApprovalNotificationMode = () => {
+      setApprovalNotificationMode(getStoredApprovalNotificationMode());
+    };
+
+    window.addEventListener(APPROVAL_NOTIFICATION_MODE_EVENT, syncApprovalNotificationMode);
+    window.addEventListener('storage', syncApprovalNotificationMode);
+    return () => {
+      window.removeEventListener(APPROVAL_NOTIFICATION_MODE_EVENT, syncApprovalNotificationMode);
+      window.removeEventListener('storage', syncApprovalNotificationMode);
+    };
+  }, []);
 
   useEffect(() => {
     setBadgeCount(
@@ -194,67 +210,41 @@ export const LeftSider = (props: SiderProps) => {
         ngay_de_nghi_den_ngay: dayjs().format('YYYY-MM-DD'),
       };
 
-      // 1. Call Duyệt Mua Hàng cho cả 2 kho
-      AccountingInvoiceService.Get.GetDanhSachDuyetMuaHang({
+      AccountingInvoiceService.Get.GetMaterialApprovalNotifications({
         search: {
-          ...commonSearchParams,
-          ma_kho: currentWarehouseCodeMM || '',
+          madvcs: commonSearchParams.madvcs,
+          fromDate: commonSearchParams.ngay_de_nghi_tu_ngay,
+          toDate: commonSearchParams.ngay_de_nghi_den_ngay,
+          warehouseCodes: [currentWarehouseCodeMM, currentWarehouseCodeVT].filter(Boolean).join(','),
+          approvalLevel: userIIS?.[0]?.capDuyetChi ?? 0,
+          mode: approvalNotificationMode,
         },
-      }).subscribe((resMM: any) => {
+      }).subscribe((response: any) => {
         const pending = {
           [eTypeVatTuMayMoc.VatTuChinh]: 0,
           [eTypeVatTuMayMoc.VatTuPhu]: 0,
           [eTypeVatTuMayMoc.MayMoc]: 0,
         };
+        const proposals = Array.isArray(response?.proposals) ? response.proposals : [];
 
-        if (Array.isArray(resMM)) {
-          for (const proposal of resMM) {
-            const capDuyetHienTai = calculateCapDuyet(proposal);
-            if (capDuyetHienTai < proposal.capDuyet) {
-              const maVt = proposal.chiTietDeNghiMuaHang[0]?.ma_vt;
-              const found = machineries.find(mm => mm.ma_vt === maVt);
-              if (found) {
-                pending[eTypeVatTuMayMoc.MayMoc]++;
-              }
-            }
-          }
-        }
+        for (const proposal of proposals) {
+          const maVt = proposal.chiTietDeNghiMuaHang?.[0]?.ma_vt;
+          const material = producsts.find(vt => vt.ma_vt === maVt);
+          const machine = machineries.find(mm => mm.ma_vt === maVt);
 
-        setHasPendingMM(pending[eTypeVatTuMayMoc.MayMoc]);
-      });
-
-      AccountingInvoiceService.Get.GetDanhSachDuyetMuaHang({
-        search: {
-          ...commonSearchParams,
-          ma_kho: currentWarehouseCodeVT || '',
-        },
-      }).subscribe((resVT: any) => {
-        const pending = {
-          [eTypeVatTuMayMoc.VatTuChinh]: 0,
-          [eTypeVatTuMayMoc.VatTuPhu]: 0,
-          [eTypeVatTuMayMoc.MayMoc]: 0,
-        };
-
-        if (Array.isArray(resVT)) {
-          for (const proposal of resVT) {
-            const capDuyetHienTai = calculateCapDuyet(proposal);
-            if (capDuyetHienTai < proposal.capDuyet) {
-              const maVt = proposal.chiTietDeNghiMuaHang[0]?.ma_vt;
-              const found = machineries.find(vt => vt.ma_vt === maVt);
-  
-              if (found?.productType === eTypeVatTu.VatTuChinh) {
-                pending[eTypeVatTuMayMoc.VatTuChinh]++;
-              } else if (found?.productType === eTypeVatTu.VatTuPhu) {
-                pending[eTypeVatTuMayMoc.VatTuPhu]++;
-              }
-            }
+          if (material?.productType === eTypeVatTu.VatTuChinh) {
+            pending[eTypeVatTuMayMoc.VatTuChinh]++;
+          } else if (material?.productType === eTypeVatTu.VatTuPhu) {
+            pending[eTypeVatTuMayMoc.VatTuPhu]++;
+          } else if (machine) {
+            pending[eTypeVatTuMayMoc.MayMoc]++;
           }
         }
 
         setHasPendingVTC(pending[eTypeVatTuMayMoc.VatTuChinh]);
         setHasPendingVTP(pending[eTypeVatTuMayMoc.VatTuPhu]);
+        setHasPendingMM(pending[eTypeVatTuMayMoc.MayMoc]);
       });
-
       // 2. Call Phiếu Nhập Kho (dùng chung cho cả 2 kho hoặc tách riêng nếu cần)
       const fetchNhapKho = (ma_kho: string) => {
         AccountingInvoiceService.Get.GetDanhSachPhieuNhapKho({
@@ -283,7 +273,7 @@ export const LeftSider = (props: SiderProps) => {
 
     updateAllProposals();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectwareHouses, products]);
+  }, [projectwareHouses, products, userIIS, approvalNotificationMode]);
 
   useEffect(() => {
     if (selectedProject?.id && company.id) {

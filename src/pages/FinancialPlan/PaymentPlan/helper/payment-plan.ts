@@ -29,6 +29,8 @@ export interface CostItem {
   ncc?: string;
   maKM?: string;
   isSalaryItem?: boolean;
+  additionalCostGroupMode?: 'date' | 'project';
+  sourceProposal?: any;
   id?: number;
 }
 
@@ -96,6 +98,7 @@ export const pushGroup = (
       ncc: it.ncc ? it.ncc : '',
       maKM: it.maKM || '',
       isSalaryItem: it.isSalaryItem ?? false,
+      sourceProposal: it.sourceProposal,
       id: it.id ?? 0,
     });
   });

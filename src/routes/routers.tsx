@@ -30,6 +30,7 @@ const CapabilityProfile = lazyComponent(
 const CompanyEmployee = lazyComponent(() => import('@/pages/CompanyEmployee'));
 const CompanyGroup = lazyComponent(() => import('@/pages/CompanyGroup'), 'CompanyGroup');
 const PayrollTeams = lazyComponent(() => import('@/pages/PayrollTeams'), 'PayrollTeams');
+const SubContractorTypes = lazyComponent(() => import('@/pages/SubContractorTypes'), 'SubContractorTypes');
 const FileUpload = lazyComponent(() => import('@/pages/Components'), 'FileUpload');
 const ViewFileNotOffice = lazyComponent(() => import('@/pages/Components'), 'ViewFileNotOffice');
 const ConstructionMagazine = lazyComponent(() => import('@/pages/ConstructionMagazine'));
@@ -241,6 +242,12 @@ export const projectRouters: MetaMenuAuthRouteObject[] = [
         name: 'Inventory report',
         path: '/projects/subcontractors/aggregate-costs',
         auth: ['TongHopChiPhi.View'],
+      },
+      {
+        element: <SubContractorTypes />,
+        name: 'Subcontractor types',
+        path: '/projects/subcontractors/types',
+        auth: ['HopDongThauPhu.View'],
       },
       {
         element: <ComingSoon />,

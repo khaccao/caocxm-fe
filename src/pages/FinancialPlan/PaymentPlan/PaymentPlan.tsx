@@ -59,6 +59,7 @@ export default function PaymentPlan(): React.JSX.Element {
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(
     sessionStorage.getItem(getButtonStateKey()) === 'true' ? true : false
   );
+  const [isAccountingSaving, setIsAccountingSaving] = useState(false);
 
   const baseOptions = useMemo(
     () => ({
@@ -360,14 +361,21 @@ export default function PaymentPlan(): React.JSX.Element {
       },
     });
   }
-  const handleCreateAccountingInvoice = () => {
+  const handleCreateAccountingInvoice = async () => {
     if (!paymentCostRef.current) return;
-    paymentCostRef.current.handleSave();
-    Utils.successNotification('Lưu hạch toán thành công');
-    setIsButtonDisabled(true);
-    // Set key for current period to 'true' to disable button
-    const buttonStateKey = getButtonStateKey();
-    sessionStorage.setItem(buttonStateKey, 'true');
+    if (isAccountingSaving) return;
+    setIsAccountingSaving(true);
+    try {
+      const saved = await paymentCostRef.current.handleSave();
+      if (!saved) return;
+      Utils.successNotification('Lưu hạch toán thành công');
+      setIsButtonDisabled(true);
+      // Set key for current period to 'true' to disable button
+      const buttonStateKey = getButtonStateKey();
+      sessionStorage.setItem(buttonStateKey, 'true');
+    } finally {
+      setIsAccountingSaving(false);
+    }
   };
 
   const handleExportSalarySummary = () => {
@@ -430,7 +438,12 @@ export default function PaymentPlan(): React.JSX.Element {
                 (selectedOptions[activeKey] === '3' || selectedOptions[activeKey] === '5') ? (
                 <div style={{ marginLeft: 10 }}>
                   <WithPermission policyKeys={['KeHoachTaiChinh.ThanhToan.Create']} strategy="disable">
-                    <Button type="primary" onClick={handleCreateAccountingInvoice} disabled={isButtonDisabled}>
+                    <Button
+                      type="primary"
+                      onClick={handleCreateAccountingInvoice}
+                      disabled={isButtonDisabled || isAccountingSaving}
+                      loading={isAccountingSaving}
+                    >
                       Lưu hạch toán
                     </Button>
                   </WithPermission>

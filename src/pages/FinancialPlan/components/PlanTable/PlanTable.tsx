@@ -5,7 +5,6 @@ import { Input, InputNumber, Table, TableProps } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { useTranslation } from 'react-i18next';
-import { v4 as uuidv4 } from 'uuid';
 
 import {
   CategoryCodes,
@@ -21,6 +20,7 @@ import {
 } from '@/common/define';
 import { ProposalData, useColoredProposals } from '@/hooks';
 import {
+  AccountingInvoiceService,
   AccountingInvoiceRequestDTO,
   ChiTietDeNghiMuaHangDTO,
   ChiTietHachToanDTO,
@@ -56,6 +56,35 @@ import { getProjectIdByWarehouse, toNumber } from './utils';
 import { buildCategoryType } from '../../PaymentPlan/helper/payment-plan';
 
 dayjs.extend(isBetween);
+
+const ZERO_GUID = '00000000-0000-0000-0000-000000000000';
+
+const buildStableGuid = (input: string): string => {
+  let hash1 = 0x811c9dc5;
+  let hash2 = 0x01000193;
+
+  for (let i = 0; i < input.length; i += 1) {
+    const code = input.charCodeAt(i);
+    hash1 ^= code;
+    hash1 = Math.imul(hash1, 0x01000193);
+    hash2 ^= code + i;
+    hash2 = Math.imul(hash2, 0x811c9dc5);
+  }
+
+  const hex = [
+    hash1 >>> 0,
+    hash2 >>> 0,
+    Math.imul(hash1 ^ hash2, 0x45d9f3b) >>> 0,
+    Math.imul(hash2 ^ input.length, 0x45d9f3b) >>> 0,
+  ].map(value => value.toString(16).padStart(8, '0')).join('');
+
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-4${hex.slice(13, 16)}-${((parseInt(hex.slice(16, 18), 16) & 0x3f) | 0x80).toString(16)}${hex.slice(18, 20)}-${hex.slice(20, 32)}`;
+};
+
+const normalizeGuid = (value?: string | null): string => {
+  if (value && value !== ZERO_GUID) return value;
+  return '';
+};
 
 // ----------------------------------------------------------------
 export const getConfirmLevel = (incidental: IncidentalCostByRangeDate) => {
@@ -121,6 +150,7 @@ export interface IGroupRecord {
   ncc?: string;
   contentCode?: any;
   isNTP?: boolean;
+  sourceProposal?: ProposalData;
 }
 const PlanTable = forwardRef(function PlanTable(
   { typeEFinancialPlan, selectMonth, policies, onUpdateButtonState }: IProps,
@@ -335,6 +365,7 @@ const PlanTable = forwardRef(function PlanTable(
       ma_nv_bh: p.ma_nv_bh || '',
       createDate: p.createDate || '',
       ma_kh: p.ma_kh || '',
+      sourceProposal: p,
     };
   };
   const rawVatTuChinhProposals = useMemo(() => {
@@ -633,6 +664,17 @@ const PlanTable = forwardRef(function PlanTable(
           );
         }
 
+        const existingFolioId = normalizeGuid(item.folioID);
+        const stableFolioId = existingFolioId || buildStableGuid([
+          typeEFinancialPlan,
+          paymentTermDate,
+          item.categoryCode,
+          item.employerCode,
+          item.employeeName,
+          item.projectCode,
+          item.projectId,
+        ].filter(value => value !== undefined && value !== null).join('|'));
+
         result.push({
           ...item,
           key: `${categoryCode}-item-${idx}`,
@@ -647,7 +689,7 @@ const PlanTable = forwardRef(function PlanTable(
           paymentTermDate: item.paymentTermDate,
           note: buildGhiChu(item, subContractor),
           createDate: item.createDate || paymentTermDate,
-          guid: item.folioID ?? '00000000-0000-0000-0000-000000000000',
+          guid: stableFolioId,
           contentCode: item.subContractorCode ?? '',
           isNTP: true,
         });
@@ -1176,12 +1218,70 @@ const PlanTable = forwardRef(function PlanTable(
     };
   };
 
-  const handleSave = () => {
-    const raw = dataSource.filter(item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup);
+  const hasAccountingAmount = (item: IGroupRecord) => {
+    const money = toNumber(item.money) ?? 0;
+    const cash = toNumber(item.total_Expenditure) ?? 0;
+    const transfer = toNumber(item.transfer) ?? 0;
+    const debt = toNumber(item.debt) ?? 0;
+    return money > 0 || cash > 0 || transfer > 0 || debt > 0;
+  };
+
+  const persistProposalPaymentValues = async (items: IGroupRecord[]) => {
+    const materialCodes = new Set([CategoryCodes.MainMaterial, CategoryCodes.AuxiliaryMaterial, CategoryCodes.Machinery]);
+    const updates = items
+      .filter(item => materialCodes.has(item.categoryCode) && item.sourceProposal?.guid)
+      .map(item => {
+        const source = item.sourceProposal!;
+        return AccountingInvoiceService.Post.CreateProposalForm({
+          ...source,
+          da_thanh_toan_tien_mat: toNumber(item.total_Expenditure),
+          da_thanh_toan_chuyen_khoan: toNumber(item.transfer),
+          hoaDonVAT: source.hoaDonVAT ?? [],
+          list_of_extensions: source.list_of_extensions ?? [],
+          chiTietHangHoa: source.chiTietHangHoa ?? [],
+        } as any);
+      });
+
+    if (updates.length) {
+      await Promise.all(updates.map(request => firstValueFrom(request)));
+    }
+  };
+
+  const persistAdditionalCostPaymentValues = async (items: IGroupRecord[]) => {
+    const incidental = groupItemsByCategoryCode(items).incidental;
+    if (!incidental.length) return;
+
+    const listRequest: IAdditionalCostUpdateRequest[] = [];
+    incidental.forEach(i => {
+      const findItem = filteredCosts.find(c => c.id === i.id);
+      if (findItem) {
+        const amount = toNumber(i.total_Expenditure) ?? 0;
+        const transfer = toNumber(i.transfer) ?? 0;
+        listRequest.push({
+          ...findItem,
+          amount,
+          transfer,
+          totalAmount: toNumber(i.money) ?? 0,
+          paymentType: -1,
+          id: i.id ?? findItem?.id ?? 0,
+          isSynchronized: (amount > 0 || transfer > 0) ? 1 : 0,
+        });
+      }
+    });
+
+    if (listRequest.length) {
+      await firstValueFrom(AccountingInvoiceService.Put.UpdateBeforeAccouttings(listRequest));
+    }
+  };
+
+  const handleSave = async (): Promise<boolean> => {
+    const raw = dataSource
+      .filter(item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup)
+      .filter(hasAccountingAmount);
 
     if (!raw.length) {
       Utils.errorNotification('Không có dữ liệu để tạo chứng từ.');
-      return;
+      return false;
     }
 
     // list request để gửi kế toán
@@ -1218,33 +1318,30 @@ const PlanTable = forwardRef(function PlanTable(
         listRequest.push(itemRequest);
       });
       if (listRequest.length) {
-        dispatch(accountingInvoiceActions.createAcountingInvoiceRequest({ data: listRequest }));
+        try {
+          const response = await firstValueFrom(AccountingInvoiceService.Post.CreateAcountingInvoice(listRequest));
+          if (!response) {
+            Utils.errorNotification('Luu hach toan that bai.');
+            return false;
+          }
+        } catch (error) {
+          console.error(error);
+          Utils.errorNotification('Luu hach toan that bai.');
+          return false;
+        }
       }
 
-    const { incidental } = groupItemsByCategoryCode(raw);
-    if (incidental.length) {
-      const listRequest: any[] = [];
-      incidental.forEach(i => {
-        const findItem = filteredCosts.find(c => c.id === i.id);
-        if (findItem) {
-          const amount = toNumber(i.total_Expenditure) ?? 0;
-          const transfer = toNumber(i.transfer) ?? 0;
-          const item: IAdditionalCostUpdateRequest = {
-            ...findItem,
-            amount,
-            transfer,
-            totalAmount: toNumber(i.money) ?? 0,
-            paymentType: -1,
-            id: i.id ?? findItem?.id ?? 0,
-            isSynchronized: (amount > 0 || transfer > 0) ? 1 : 0,
-          };
-          listRequest.push(item);
-        }
-      });
-      if (listRequest.length) {
-        dispatch(accountingInvoiceActions.updateBeforeAccouttings({ dataCreates: listRequest, companyId: company.id }));
-      }
+    try {
+      await Promise.all([
+        persistProposalPaymentValues(raw),
+        persistAdditionalCostPaymentValues(raw),
+      ]);
+    } catch (error) {
+      console.error(error);
+      Utils.errorNotification('Da hach toan nhung luu so tien ve bang nguon that bai.');
+      return false;
     }
+    return true;
     // const splitByDate = (items: IGroupRecord[]) => {
     //   return items.reduce((acc, item) => {
     //     const dateKey = item.createDate ? item.createDate : item.paymentTermDate || dayjs().format(FormatDateAPI);

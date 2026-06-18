@@ -158,6 +158,22 @@ export default function IncidentalDetailModal({ incidental, onClose }: Incidenta
         fixed: 'left',
       },
       {
+        title: 'TK Nợ',
+        dataIndex: 'tkNo',
+        key: 'tkNo',
+        width: 110,
+        align: 'center',
+        render: value => value || '-',
+      },
+      {
+        title: 'TK Có',
+        dataIndex: 'tkCo',
+        key: 'tkCo',
+        width: 110,
+        align: 'center',
+        render: value => value || '-',
+      },
+      {
         title: 'Tên chi phí',
         dataIndex: 'costName',
         key: 'costName',

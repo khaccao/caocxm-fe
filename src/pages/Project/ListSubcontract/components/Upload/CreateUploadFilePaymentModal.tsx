@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import {
+  DownloadOutlined,
   FileExclamationOutlined,
   InboxOutlined,
   UploadOutlined
@@ -11,6 +12,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { FileUpLoadName } from '@/common/define';
+import { SubContractorTypeService } from '@/services/SubContractorTypeService';
 import { documentActions, getFileData, getFolderRootId, getPathDocument } from '@/store/documents';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getFileRoots, getSelectedProject } from '@/store/project';
@@ -48,6 +50,7 @@ export default function CreateUploadFilePaymentModal({ isUploadModal, setIsUploa
 
   const listDataFileRoots = useAppSelector(getFileRoots());
   const isCallRef = useRef(true);
+  const [downloadingTemplate, setDownloadingTemplate] = useState(false);
 
   const rootId12 = listDataFileRoots?.results?.find((i: any) => i.name === 'thanhtoanthauphu12');
   const rootId27 = listDataFileRoots?.results?.find((i: any) => i.name === 'thanhtoanthauphu27');
@@ -224,6 +227,32 @@ export default function CreateUploadFilePaymentModal({ isUploadModal, setIsUploa
     setIsUploadModal(false);
   };
 
+  const handleDownloadTemplate = () => {
+    if (!selectedProject?.companyId) {
+      message.error('Không tìm thấy công ty để tải file mẫu.');
+      return;
+    }
+
+    setDownloadingTemplate(true);
+    SubContractorTypeService.Get.downloadImportTemplate(selectedProject.companyId).subscribe({
+      next: result => {
+        const blob = result as Blob;
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = 'Mau_Import_Nha_Thau.xlsx';
+        link.click();
+        window.URL.revokeObjectURL(url);
+      },
+      error: error => {
+        message.error('Tải file mẫu thất bại.');
+        console.error(error);
+        setDownloadingTemplate(false);
+      },
+      complete: () => setDownloadingTemplate(false),
+    });
+  };
+
   //[21320][hoang_nm][13/01/2025] Chỉnh lại logic tải file và tên folder màn hình TTTP 12,27
   // useEffect(() => {
   //   if (fileData.length > 0 && fileData[0]?.code !== undefined) {
@@ -257,6 +286,17 @@ export default function CreateUploadFilePaymentModal({ isUploadModal, setIsUploa
             </Option>
           ))}
         </Select>
+      </div>
+
+      <div style={{ margin: '0 auto 16px', maxWidth: 370, color: '#5c6570', fontSize: 13, lineHeight: 1.6 }}>
+        <div>Dòng Mã nhà thầu trong file mẫu dùng để nhập mã khách hàng kế toán.</div>
+        <div>Dòng Mã loại nhà thầu dùng mã danh mục như `PCCC`, `MEP`, `XAY_TO`.</div>
+      </div>
+
+      <div style={{ textAlign: 'center', marginBottom: 16 }}>
+        <Button icon={<DownloadOutlined />} loading={downloadingTemplate} onClick={handleDownloadTemplate}>
+          Tải file mẫu import
+        </Button>
       </div>
 
       <Upload.Dragger

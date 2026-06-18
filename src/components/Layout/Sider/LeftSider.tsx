@@ -890,6 +890,11 @@ export const LeftSider = (props: SiderProps) => {
           key: '/projects/subcontractors/aggregate-costs',
           auth: ['TongHopChiPhi.View'],
         },
+        {
+          label: 'Loại nhà thầu',
+          key: '/projects/subcontractors/types',
+          auth: ['HopDongThauPhu.View'],
+        },
       ],
     },
     {

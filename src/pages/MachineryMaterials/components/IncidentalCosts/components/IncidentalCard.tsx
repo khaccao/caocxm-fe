@@ -10,6 +10,7 @@ import { IncidentalData } from '@/services/AccountingInvoiceService';
 import { accountingInvoiceActions } from '@/store/accountingInvoice';
 import { useAppDispatch } from '@/store/hooks';
 import Utils from '@/utils';
+import AccountingAccountsSummary from '../../AccountingAccountsSummary';
 import { IncidentalForm } from '.';
 import { getColorBaseOnStatus, getConfirmLevel } from '../utils';
 import styles from './IncidentalCard.module.css';
@@ -106,6 +107,7 @@ export default function IncidentalCard({ incidental, handleDelete }: IncidentalC
             <strong>Ngày hạch toán: </strong>
             {incidental.dateConfirmByRank2 ? <>{dayjs(incidental.dateConfirmByRank2).format('DD/MM/YYYY')}</> : null}
           </Text>
+          <AccountingAccountsSummary businessType={5} compact />
         </div>
         <div className={styles.confirmlevel}>
           <Text className={styles.textHighlight}>

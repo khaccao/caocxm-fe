@@ -24,6 +24,7 @@ import { Badge, Button, ButtonProps, Card, Empty, Modal, Space, Typography } fro
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useLocation } from 'react-router-dom';
+import AccountingAccountsSummary, { getMaterialAccountingBusinessType } from '../AccountingAccountsSummary';
 import MachineryMaterialsConfirm from '../MachineryMaterialsConfirm';
 import MayMocConfirm from '../MachineryMaterialsConfirm/MayMocConfirm';
 import NewMachineryMaterialList from '../NewMachineryMaterialList';
@@ -434,6 +435,7 @@ const ProposalCard: React.FC<{
           <Text className={styles.textWhite}>
             <strong>Mã kho:</strong> {proposal.chiTietDeNghiMuaHang[0].ma_kho}
           </Text>
+          <AccountingAccountsSummary businessType={getMaterialAccountingBusinessType(type)} compact />
         </div>
         <div className={styles.confirmlevel}>
           <Text className={styles.textHighlight}>

@@ -167,6 +167,9 @@ export interface CreateProjectWarehousePayload {
 export interface PaymentTerm {
   isUpdate: boolean;
   code: string;
+  accountingCustomerCode?: string;
+  contractorTypeCode?: string;
+  contractorTypeName?: string;
   name: string;
   nguoiDaiDien: string;
   giaTriTheoHopDong: number;

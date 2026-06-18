@@ -28,6 +28,7 @@ export interface CostItem {
   ncc?: string;
   maKM?: string;
   guid?: string;
+  sourceProposal?: any;
 }
 
 export const pushGroup = (
@@ -90,6 +91,7 @@ export const pushGroup = (
       ma_kh: it.ma_kh || '',
       ncc: it.ncc ? it.ncc : '',
       maKM: it.maKM || '',
+      sourceProposal: it.sourceProposal,
       debt: it.debt ? it.debt.toLocaleString('en-US') : ((it.money ?? 0) - (it.transfer ?? 0) - (it.total_Expenditure ?? 0)).toLocaleString('en-US'),
     });
   });

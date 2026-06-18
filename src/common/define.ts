@@ -1510,6 +1510,7 @@ export interface CreateAcountingInvoiceRequestDTO {
   maDT: string;
   note: string;
   contentCode?: any;
+  additionalCostGroupMode?: 'date' | 'project';
 }
 
 // [19/05/2025][#21983][vy_tt]
@@ -1775,6 +1776,9 @@ export interface SubContractorDTO {
   code: string;
   name: string;
   nguoiDaiDien: string;
+  contractorTypeCode?: string;
+  contractorTypeName?: string;
+  accountingCustomerCode?: string;
   giaTriTheoHopDong: number;
   giaTriTheoHopDong_Code: string;
   giaTriUngTruoc: number;

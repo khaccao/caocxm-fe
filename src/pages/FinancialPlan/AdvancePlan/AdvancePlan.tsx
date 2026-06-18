@@ -32,6 +32,7 @@ export const AdvancePlan: React.FC = () => {
   const [isButtonDisabled, setIsButtonDisabled] = useState<boolean>(
     sessionStorage.getItem(getButtonStateKey()) === 'true' ? true : false
   );
+  const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
     // Check sessionStorage key for current period
@@ -66,7 +67,13 @@ export const AdvancePlan: React.FC = () => {
       </Space>
       <Space>
         <WithPermission policyKeys={['KeHoachTaiChinh.TamUng.Create']}>
-          <Button style={{ marginTop: 2 }} type='primary' onClick={handleSave} disabled={isButtonDisabled}>
+          <Button
+            style={{ marginTop: 2 }}
+            type='primary'
+            onClick={handleSave}
+            disabled={isButtonDisabled || isSaving}
+            loading={isSaving}
+          >
             Lưu hạch toán
           </Button>
         </WithPermission>
@@ -75,13 +82,22 @@ export const AdvancePlan: React.FC = () => {
     )
   };
 
-  const handleSave = () => {
-    planTableRef.current?.handleSave();
-    Utils.successNotification('Lưu hạch toán thành công');
-    setIsButtonDisabled(true);
-    // Set key for current period to 'true' to disable button
-    const buttonStateKey = getButtonStateKey();
-    sessionStorage.setItem(buttonStateKey, 'true');
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const saved = await planTableRef.current?.handleSave();
+      if (!saved) {
+        return;
+      }
+      Utils.successNotification('Lưu hạch toán thành công');
+      setIsButtonDisabled(true);
+      // Set key for current period to 'true' to disable button
+      const buttonStateKey = getButtonStateKey();
+      sessionStorage.setItem(buttonStateKey, 'true');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const updateButtonState = () => {

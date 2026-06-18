@@ -22,6 +22,9 @@ interface DataType {
 }
 export interface PaymentTerm {
   code: string;
+  accountingCustomerCode?: string;
+  contractorTypeCode?: string;
+  contractorTypeName?: string;
   name: string;
   nguoiDaiDien: string;
   giaTriTheoHopDong: number;
@@ -114,7 +117,23 @@ const PaythesubcontractorList: React.FC<PaythesubcontractorListProps> = ({ type 
       dataIndex: 'code',
       align: 'center',
       key: 'code',
-      width: 150,
+      width: 120,
+    },
+    {
+      title: <span style={{ fontWeight: 'bold' }}>Mã KH</span>,
+      dataIndex: 'accountingCustomerCode',
+      align: 'center',
+      key: 'accountingCustomerCode',
+      width: 120,
+      render: value => value || '-',
+    },
+    {
+      title: <span style={{ fontWeight: 'bold' }}>Loại nhà thầu</span>,
+      dataIndex: 'contractorTypeCode',
+      align: 'center',
+      key: 'contractorTypeCode',
+      width: 140,
+      render: (_value, record) => record.contractorTypeCode || record.contractorTypeName || '-',
     },
     {
       title: <span style={{ fontWeight: 'bold' }}>{t('contractorName')}</span>,
@@ -185,10 +204,12 @@ const PaythesubcontractorList: React.FC<PaythesubcontractorListProps> = ({ type 
             <Table.Summary.Cell index={0}>{t('total')}</Table.Summary.Cell>
             <Table.Summary.Cell index={1}></Table.Summary.Cell>
             <Table.Summary.Cell index={2}></Table.Summary.Cell>
-            <Table.Summary.Cell index={3}>{totalContractValue.toLocaleString()}</Table.Summary.Cell>
-            <Table.Summary.Cell index={4}>{totalCumulativeValue.toLocaleString()}</Table.Summary.Cell>
-            <Table.Summary.Cell index={5}>{totalCurrentValue.toLocaleString()}</Table.Summary.Cell>
-            <Table.Summary.Cell index={6}>{totalRemainingValue.toLocaleString()}</Table.Summary.Cell>
+            <Table.Summary.Cell index={3}></Table.Summary.Cell>
+            <Table.Summary.Cell index={4}></Table.Summary.Cell>
+            <Table.Summary.Cell index={5}>{totalContractValue.toLocaleString()}</Table.Summary.Cell>
+            <Table.Summary.Cell index={6}>{totalCumulativeValue.toLocaleString()}</Table.Summary.Cell>
+            <Table.Summary.Cell index={7}>{totalCurrentValue.toLocaleString()}</Table.Summary.Cell>
+            <Table.Summary.Cell index={8}>{totalRemainingValue.toLocaleString()}</Table.Summary.Cell>
           </Table.Summary.Row>
         )}
       />

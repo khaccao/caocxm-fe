@@ -1,7 +1,7 @@
 /* eslint-disable import/order */
 import React, { forwardRef, useEffect, useImperativeHandle, useMemo, useState } from 'react';
 
-import { Input, InputNumber, Table, TableProps } from 'antd';
+import { Input, InputNumber, Modal, Radio, Table, TableProps } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
 import isBetween from 'dayjs/plugin/isBetween';
 import { useTranslation } from 'react-i18next';
@@ -23,6 +23,7 @@ import {
 } from '@/common/define';
 import { DayDataType, ProposalData, useColoredProposals } from '@/hooks';
 import {
+  AccountingInvoiceService,
   AccountingInvoiceRequestDTO,
   ChiTietDeNghiMuaHangDTO,
   ChiTietHachToanDTO,
@@ -81,6 +82,10 @@ interface IProps {
   };
   onUpdateButtonState?: () => void;
 }
+
+const BCH_ADVANCE_DAY20_REQUEST_TYPE = 20;
+type IncidentalGroupMode = 'date' | 'project';
+
 export interface IGroupRecord {
   guid?: string;
   key: string;
@@ -122,10 +127,12 @@ export interface IGroupRecord {
   ncc?: string;
   contentCode?: any;
   isSalaryItem?: boolean;
+  additionalCostGroupMode?: IncidentalGroupMode;
+  sourceProposal?: ProposalData;
 }
 
 export interface PaymentCostRef {
-  handleSave: () => void;
+  handleSave: () => Promise<boolean>;
 }
 
 const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
@@ -146,6 +153,8 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
   const projectCache: { [key: string]: { id: string; name: string; code: string } } = {};
 
   const [dataSource, setDataSource] = useState<IGroupRecord[]>([]);
+  const [incidentalGroupMode, setIncidentalGroupMode] = useState<IncidentalGroupMode>('date');
+  const [incidentalPreviewOpen, setIncidentalPreviewOpen] = useState(false);
   const [vatTuChinhItems, setVatTuChinhItems] = useState<CostItem[]>([]);
   const [vatTuPhuItems, setVatTuPhuItems] = useState<CostItem[]>([]);
   const [mayMocItems, setMayMocItems] = useState<CostItem[]>([]);
@@ -409,6 +418,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       ma_nv_bh: p.ma_nv_bh || '',
       createDate: p.createDate || '',
       ma_kh: p.ma_kh || '',
+      sourceProposal: p,
     };
   };
 
@@ -491,7 +501,13 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           periodCode: ePeriodCode.PERIODCODEDAY20,
           type: 0,
           employeeIds: NVEmployeeIds,
-        }
+        },
+        {
+          workingDay,
+          periodCode: ePeriodCode.PERIODCODEBCH,
+          type: BCH_ADVANCE_DAY20_REQUEST_TYPE,
+          employeeIds: BCHEmployeeIds,
+        },
       ];
     dispatch(
       employeeActions.getEmployeeSalariesPaysRequest({
@@ -714,6 +730,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       }),
       contentCode: c.costCode ?? '',
       id: c.id,
+      additionalCostGroupMode: incidentalGroupMode,
     }));
 
     pushGroup(
@@ -782,47 +799,30 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           }
           
           // Handle "=" key press for auto-calculation
-          if (event.key === '=' && (key === 'transfer' || key === 'total_Expenditure')) {
-            const inputElement = event.currentTarget;
-            const currentValue = toNumber(record[key] ?? 0);
-            const isSelected = inputElement.selectionStart === 0 && inputElement.selectionEnd === inputElement.value.length;
-            
-            // Chỉ tính khi: giá trị = 0 hoặc rỗng hoặc đang select all
-            if (currentValue === 0 || record[key] === null || record[key] === undefined || record[key] === '' || isSelected) {
-              event.preventDefault();
-              
-              const totalMoney = toNumber(record.money);
-              const transferValue = toNumber(record.transfer || 0);
-              const cashValue = toNumber(record.total_Expenditure || 0);
-              
-              let calculatedValue = 0;
-              if (key === 'transfer') {
-                // Chuyển khoản = Tổng tiền - Tiền mặt
-                calculatedValue = totalMoney - cashValue;
-              } else if (key === 'total_Expenditure') {
-                // Tiền mặt = Tổng tiền - Chuyển khoản
-                calculatedValue = totalMoney - transferValue;
-              }
-              
-              // Đảm bảo không âm
-              calculatedValue = Math.max(0, calculatedValue);
-              
-              const updatedRecord = { ...record };
-              updatedRecord[key] = calculatedValue.toString();
-              
-              // Tính lại công nợ
-              const newTransferValue = key === 'transfer' ? calculatedValue : transferValue;
-              const newCashValue = key === 'total_Expenditure' ? calculatedValue : cashValue;
-              const calculatedDebt = totalMoney - newTransferValue - newCashValue;
-              updatedRecord.debt = calculatedDebt.toString();
-              
-              setDataSource(prevData => {
-                const newData = prevData.map(row => (row.key === record.key ? updatedRecord : row));
-                return updateTotalValues(newData);
-              });
-              
-              onUpdateButtonState?.();
+          if (
+            (event.key === '=' || event.key === '+' || event.code === 'Equal' || event.code === 'NumpadAdd') &&
+            (key === 'transfer' || key === 'total_Expenditure')
+          ) {
+            event.preventDefault();
+            const totalMoney = toNumber(record.money);
+            const updatedRecord = { ...record };
+
+            if (key === 'transfer') {
+              updatedRecord.transfer = totalMoney;
+              updatedRecord.total_Expenditure = 0;
+            } else if (key === 'total_Expenditure') {
+              updatedRecord.total_Expenditure = totalMoney;
+              updatedRecord.transfer = 0;
             }
+
+            updatedRecord.debt = 0;
+
+            setDataSource(prevData => {
+              const newData = prevData.map(row => (row.key === record.key ? updatedRecord : row));
+              return updateTotalValues(newData);
+            });
+
+            onUpdateButtonState?.();
           }
         }}
         onChange={(v: number | null) => {
@@ -951,11 +951,10 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       align: 'center',
       render: (value, record) => {
         if (record.isGroup) {
-          return <strong>{Math.round(toNumber(value)).toLocaleString('en-US')}</strong>;
+          return <strong>{toNumber(value).toLocaleString('en-US')}</strong>;
         } else {
-          // Tổng tiền không thay đổi, hiển thị giá trị gốc
           const originalMoney = toNumber(record.money || 0);
-          return Math.round(originalMoney).toLocaleString('en-US');
+          return originalMoney.toLocaleString('en-US');
         }
       },
     },
@@ -967,9 +966,9 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       align: 'center',
       render: (value, record) => {
         if (record.isGroup) {
-          return <strong>{Math.round(toNumber(value)).toLocaleString('en-US')}</strong>;
+          return <strong>{toNumber(value).toLocaleString('en-US')}</strong>;
         } else {
-          const numValue = value === null || value === undefined || value === '' ? null : Math.round(toNumber(value));
+          const numValue = value === null || value === undefined || value === '' ? null : toNumber(value);
           return renderInputNumber(numValue, record, 'transfer');
         }
       },
@@ -982,9 +981,9 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       align: 'center',
       render: (value, record) => {
         if (record.isGroup) {
-          return <strong>{Math.round(toNumber(value)).toLocaleString('en-US')}</strong>;
+          return <strong>{toNumber(value).toLocaleString('en-US')}</strong>;
         } else {
-          const numValue = value === null || value === undefined || value === '' ? null : Math.round(toNumber(value));
+          const numValue = value === null || value === undefined || value === '' ? null : toNumber(value);
           return renderInputNumber(numValue, record, 'total_Expenditure');
         }
       },
@@ -997,16 +996,14 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       align: 'center',
       render: (value, record) => {
         if (record.isGroup) {
-          return <strong>{Math.round(toNumber(value)).toLocaleString('en-US')}</strong>;
+          return <strong>{toNumber(value).toLocaleString('en-US')}</strong>;
         } else {
           // Hiển thị công nợ đã được tính: Tổng tiền - Chuyển khoản - Tiền mặt
           const totalMoney = toNumber(record.money || 0);
           const transferValue = toNumber(record.transfer || 0);
           const cashValue = toNumber(record.total_Expenditure || 0);
           const calculatedDebt = totalMoney - transferValue - cashValue;
-          const roundedDebt = Math.round(calculatedDebt);
-          const normalizedDebt = roundedDebt === 0 ? 0 : roundedDebt;
-          return <span>{normalizedDebt.toLocaleString('en-US')}</span>;
+          return <span>{calculatedDebt.toLocaleString('en-US')}</span>;
         }
       },
     },
@@ -1030,7 +1027,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
     setDataSource(addSTT());
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredCosts, vatTuPhuItems, vatTuChinhItems, mayMocItems, employeeSalariesPays]);
+  }, [filteredCosts, vatTuPhuItems, vatTuChinhItems, mayMocItems, employeeSalariesPays, incidentalGroupMode]);
 
   const prepareChiTietHachToan = (items: IGroupRecord[], kind: TPaymentKind): ChiTietHachToanDTO[] => {
     return items.map(item => {
@@ -1038,13 +1035,12 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       const ma_khoan_muc = buildMaKM(item);
       const tk_no = buildTkNo(item);
       const tk_co = mapPaymentToTkCo(kind);
-      const soTien = Math.round(
+      const soTien =
         kind === 'cash'
           ? toNumber(item.total_Expenditure)
           : kind === 'debt'
             ? toNumber(item.debt)
-            : toNumber(item.transfer),
-      );
+            : toNumber(item.transfer);
       const ghi_chu = item.note ?? buildGhiChu(item);
       return {
         folioID: item.guid ?? '',
@@ -1144,18 +1140,105 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
     };
   };
 
-    const handleSave = () => {
-      const raw = dataSource.filter(item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup);
+  const persistProposalPaymentValues = async (items: IGroupRecord[]) => {
+    const materialCodes = new Set([CategoryCodes.MainMaterial, CategoryCodes.AuxiliaryMaterial, CategoryCodes.Machinery]);
+    const updates = items
+      .filter(item => materialCodes.has(item.categoryCode) && item.sourceProposal?.guid)
+      .map(item => {
+        const source = item.sourceProposal!;
+        return AccountingInvoiceService.Post.CreateProposalForm({
+          ...source,
+          da_thanh_toan_tien_mat: toNumber(item.total_Expenditure),
+          da_thanh_toan_chuyen_khoan: toNumber(item.transfer),
+          hoaDonVAT: source.hoaDonVAT ?? [],
+          list_of_extensions: source.list_of_extensions ?? [],
+          chiTietHangHoa: source.chiTietHangHoa ?? [],
+        } as any);
+      });
+
+    if (updates.length) {
+      await Promise.all(updates.map(request => firstValueFrom(request)));
+    }
+  };
+
+  const persistAdditionalCostPaymentValues = async (items: IGroupRecord[]) => {
+    const incidental = groupItemsByCategoryCode(items).incidental;
+    if (!incidental.length) return;
+
+    const listRequest: IAdditionalCostUpdateRequest[] = [];
+    incidental.forEach(i => {
+      const findItem = filteredCosts.find(c => c.id === i.id);
+      if (findItem) {
+        const amount = toNumber(i.total_Expenditure) ?? 0;
+        const transfer = toNumber(i.transfer) ?? 0;
+        listRequest.push({
+          ...findItem,
+          amount,
+          transfer,
+          totalAmount: toNumber(i.money) ?? 0,
+          paymentType: -1,
+          id: i.id ?? findItem?.id ?? 0,
+          isSynchronized: (amount > 0 || transfer > 0) ? 1 : 0,
+        });
+      }
+    });
+
+    if (listRequest.length) {
+      await firstValueFrom(AccountingInvoiceService.Put.UpdateBeforeAccouttings(listRequest));
+    }
+  };
+
+    const handleSave = async (): Promise<boolean> => {
+      const raw = dataSource
+        .filter(item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup)
+        .filter(item => {
+          const money = toNumber(item.money);
+          const cash = toNumber(item.total_Expenditure);
+          const transfer = toNumber(item.transfer);
+          const debt = toNumber(item.debt);
+          return money > 0 || cash > 0 || transfer > 0 || debt > 0;
+        });
 
       if (!raw.length) {
         Utils.errorNotification('Không có dữ liệu để tạo chứng từ.');
-        return;
+        return false;
+      }
+
+      // Kiểm tra tính hợp lệ của dữ liệu trước khi save
+      const validationErrors: string[] = [];
+      raw.forEach((item, idx) => {
+        const money = toNumber(item.money);
+        const cash = toNumber(item.total_Expenditure);
+        const transfer = toNumber(item.transfer);
+        const debt = toNumber(item.debt);
+        const total = cash + transfer + debt;
+        
+        // Kiểm tra: Tiền mặt + Chuyển khoản + Công nợ = Tổng tiền
+        // Cho phép sai số nhỏ nhất 0.01
+        if (Math.abs(total - money) > 0.01) {
+          validationErrors.push(
+            `Row ${item.STT} (${item.name}): Tổng = ${money}, nhưng Tiền mặt(${cash}) + Chuyển khoản(${transfer}) + Công nợ(${debt}) = ${total}`
+          );
+        }
+      });
+
+      if (validationErrors.length > 0) {
+        Utils.errorNotification(
+          `Lỗi dữ liệu:\n${validationErrors.join('\n')}\n\nVui lòng kiểm tra lại thanh toán.`
+        );
+        console.error('Validation errors:', validationErrors);
+        return false;
       }
 
       // list request để gửi kế toán
       const listRequest: CreateAcountingInvoiceRequestDTO[] = [];
       raw.forEach(item => {
         const categoryType = buildCategoryType(item);
+        const money = toNumber(item.money);
+        const cash = toNumber(item.total_Expenditure);
+        const transfer = toNumber(item.transfer);
+        const debt = toNumber(item.debt);
+        
         const itemRequest: CreateAcountingInvoiceRequestDTO = {
           guid: item.guid ?? '',
           id: item.id ?? 0,
@@ -1168,10 +1251,10 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           projectId:  String(item.projectId ?? ''),
           projectName: item.projectName ?? '',
           maKM: buildMaKM(item),
-          money: toNumber(item.money) ?? 0,
-          cash: toNumber(item.total_Expenditure) ?? 0,
-          transfer: toNumber(item.transfer) ?? 0,
-          debt: toNumber(item.debt) ?? 0,
+          money,
+          cash,
+          transfer,
+          debt,
           subContractorCode: item.subContractorCode ?? '',
           subContractorId: item.subContractorId ?? 0,
           unit: item.unit ?? '',
@@ -1182,6 +1265,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           maDT: buildMaDoiTuong(item),
           note: item.note ?? '',
           contentCode: item.contentCode ?? '',
+          additionalCostGroupMode: categoryType === 5 ? (item.additionalCostGroupMode ?? incidentalGroupMode) : undefined,
         };
         listRequest.push(itemRequest);
       });
@@ -1189,6 +1273,10 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       const salaryUpdateItems = raw.map(item => {
           if (item.isSalaryItem) {
             const findItem = employeeSalariesPays?.find(s => s.folioID === item.guid);
+            const money = toNumber(item.money);
+            const cash = toNumber(item.total_Expenditure);
+            const transfer = toNumber(item.transfer);
+            
             const temp: IEmployeeSalariesPayDTO = {
               companyId: findItem?.companyId ?? 0,
               contentName: findItem?.contentName ?? '',
@@ -1198,10 +1286,10 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
               notes: findItem?.notes ?? '',
               createdById: findItem?.createdById ?? 0,
               createDate: findItem?.createDate ?? '',
-              amount: toNumber(item.total_Expenditure) ?? 0,
-              transfer: toNumber(item.transfer) ?? 0,
+              amount: cash,
+              transfer: transfer,
               quantity: findItem?.quantity ?? 0,
-              totalAmount: toNumber(item.money) ?? 0,
+              totalAmount: money,
               folioID: findItem?.folioID ?? '',
               paymentType: findItem?.paymentType ?? 0,
               periodCode: findItem?.periodCode ?? '',
@@ -1240,39 +1328,41 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           periodCode: ePeriodCode.PERIODCODEDAY20,
           type: 0,
           employeeIds: NVEmployeeIds,
-        }
+        },
+        {
+          workingDay,
+          periodCode: ePeriodCode.PERIODCODEBCH,
+          type: BCH_ADVANCE_DAY20_REQUEST_TYPE,
+          employeeIds: BCHEmployeeIds,
+        },
       ];
         dispatch(employeeActions.updateEmployeeSalariesPaysRequest({ companyId: company.orgId, body: salaryUpdateItems, bodyGet }));
       }
       if (listRequest.length) {
-        dispatch(accountingInvoiceActions.createAcountingInvoiceRequest({ data: listRequest }));
-      }
-
-      // old logic
-      const { incidental } = groupItemsByCategoryCode(raw);
-      if (incidental.length) {
-        const listRequest: any[] = [];
-        incidental.forEach(i => {
-          const findItem = filteredCosts.find(c => c.id === i.id);
-          if (findItem) {
-            const amount = toNumber(i.total_Expenditure) ?? 0;
-            const transfer = toNumber(i.transfer) ?? 0;
-            const item: IAdditionalCostUpdateRequest = {
-              ...findItem,
-              amount,
-              transfer,
-              totalAmount: toNumber(i.money) ?? 0,
-              paymentType: -1,
-              id: i.id ?? findItem?.id ?? 0,
-              isSynchronized: (amount > 0 || transfer > 0) ? 1 : 0,
-            };
-            listRequest.push(item);
+        try {
+          const response = await firstValueFrom(AccountingInvoiceService.Post.CreateAcountingInvoice(listRequest));
+          if (!response) {
+            Utils.errorNotification('Luu hach toan that bai.');
+            return false;
           }
-        });
-        if (listRequest.length) {
-          dispatch(accountingInvoiceActions.updateBeforeAccouttings({ dataCreates: listRequest, companyId: company.id }));
+        } catch (error) {
+          console.error(error);
+          Utils.errorNotification('Luu hach toan that bai.');
+          return false;
         }
       }
+
+      try {
+        await Promise.all([
+          persistProposalPaymentValues(raw),
+          persistAdditionalCostPaymentValues(raw),
+        ]);
+      } catch (error) {
+        console.error(error);
+        Utils.errorNotification('Da hach toan nhung luu so tien ve bang nguon that bai.');
+        return false;
+      }
+      return true;
       //   const findItems = incidental.filter(i => i.id ===);
       //   console.log('findItems', findItems);
       // }
@@ -1375,6 +1465,114 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       // }
     };
 
+  const incidentalPreviewRows = useMemo(() => {
+    const rows = dataSource.filter(row => !row.isGroup && row.categoryCode === CategoryCodes.Incidental);
+    const grouped = new Map<
+      string,
+      {
+        key: string;
+        label: string;
+        count: number;
+        projects: Set<string>;
+        dates: Set<string>;
+        cash: number;
+        transfer: number;
+        debt: number;
+        total: number;
+      }
+    >();
+
+    rows.forEach(row => {
+      const dateLabel = row.createDate ? dayjs(row.createDate).format(formatDateDisplay) : 'Chưa có ngày';
+      const projectLabel = [row.projectCode, row.projectName].filter(Boolean).join(' - ') || 'Chưa có công trình';
+      const groupKey = incidentalGroupMode === 'date' ? dateLabel : projectLabel;
+
+      if (!grouped.has(groupKey)) {
+        grouped.set(groupKey, {
+          key: groupKey,
+          label: groupKey,
+          count: 0,
+          projects: new Set<string>(),
+          dates: new Set<string>(),
+          cash: 0,
+          transfer: 0,
+          debt: 0,
+          total: 0,
+        });
+      }
+
+      const item = grouped.get(groupKey)!;
+      item.count += 1;
+      item.projects.add(projectLabel);
+      item.dates.add(dateLabel);
+      item.cash += toNumber(row.total_Expenditure);
+      item.transfer += toNumber(row.transfer);
+      item.debt += toNumber(row.debt);
+      item.total += toNumber(row.money);
+    });
+
+    return Array.from(grouped.values()).map(item => ({
+      ...item,
+      projectsText: Array.from(item.projects).join(', '),
+      datesText: Array.from(item.dates).join(', '),
+    }));
+  }, [dataSource, incidentalGroupMode]);
+
+  const incidentalPreviewColumns: TableProps<(typeof incidentalPreviewRows)[number]>['columns'] = [
+    {
+      title: incidentalGroupMode === 'date' ? 'Ngày hạch toán' : 'Công trình',
+      dataIndex: 'label',
+      width: 240,
+      render: value => <span style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{value}</span>,
+    },
+    {
+      title: 'Số dòng',
+      dataIndex: 'count',
+      width: 85,
+      align: 'center',
+    },
+    {
+      title: 'Công trình liên quan',
+      dataIndex: 'projectsText',
+      width: 360,
+      render: value => <span style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{value}</span>,
+    },
+    {
+      title: 'Ngày phát sinh',
+      dataIndex: 'datesText',
+      width: 230,
+      render: value => <span style={{ whiteSpace: 'normal', wordBreak: 'break-word' }}>{value}</span>,
+    },
+    {
+      title: 'Tiền mặt',
+      dataIndex: 'cash',
+      width: 130,
+      align: 'right',
+      render: value => toNumber(value).toLocaleString('en-US'),
+    },
+    {
+      title: 'Chuyển khoản',
+      dataIndex: 'transfer',
+      width: 130,
+      align: 'right',
+      render: value => toNumber(value).toLocaleString('en-US'),
+    },
+    {
+      title: 'Công nợ',
+      dataIndex: 'debt',
+      width: 130,
+      align: 'right',
+      render: value => toNumber(value).toLocaleString('en-US'),
+    },
+    {
+      title: 'Tổng tiền',
+      dataIndex: 'total',
+      width: 130,
+      align: 'right',
+      render: value => toNumber(value).toLocaleString('en-US'),
+    },
+  ];
+
   const renderSummary: TableProps<IGroupRecord>['summary'] = pageData => {
     let transfer = 0;
     let cash = 0;
@@ -1398,7 +1596,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           <Table.Summary.Cell index={5} align="center" />
 
           <Table.Summary.Cell index={6} align="center">
-            <strong>{Math.round(transfer).toLocaleString('en-US')}</strong>
+            <strong>{transfer.toLocaleString('en-US')}</strong>
           </Table.Summary.Cell>
 
           <Table.Summary.Cell index={7} colSpan={3} />
@@ -1414,7 +1612,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           <Table.Summary.Cell index={7} align="center" />
 
           <Table.Summary.Cell index={8} align="center">
-            <strong>{Math.round(debt).toLocaleString('en-US')}</strong>
+            <strong>{debt.toLocaleString('en-US')}</strong>
           </Table.Summary.Cell>
 
           <Table.Summary.Cell index={9} />
@@ -1425,12 +1623,12 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
             <strong>TỔNG CỘNG</strong>
           </Table.Summary.Cell>
           <Table.Summary.Cell index={5} align="center">
-            <strong>{Math.round(grand).toLocaleString('en-US')}</strong>
+            <strong>{grand.toLocaleString('en-US')}</strong>
           </Table.Summary.Cell>
           <Table.Summary.Cell index={6} align="center" />
 
           <Table.Summary.Cell index={7} align="center">
-            <strong>{Math.round(cash).toLocaleString('en-US')}</strong>
+            <strong>{cash.toLocaleString('en-US')}</strong>
           </Table.Summary.Cell>
           <Table.Summary.Cell index={8} colSpan={2} />
         </Table.Summary.Row>
@@ -1440,6 +1638,25 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
 
   return (
     <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
+        <Radio.Group
+          value={incidentalGroupMode}
+          onChange={event => {
+            setIncidentalGroupMode(event.target.value);
+            setIncidentalPreviewOpen(true);
+            onUpdateButtonState?.();
+          }}
+          optionType="button"
+          buttonStyle="solid"
+        >
+          <Radio.Button value="date" onClick={() => setIncidentalPreviewOpen(true)}>
+            Gom chi phí phát sinh theo ngày
+          </Radio.Button>
+          <Radio.Button value="project" onClick={() => setIncidentalPreviewOpen(true)}>
+            Gom theo công trình
+          </Radio.Button>
+        </Radio.Group>
+      </div>
       <Table
         summary={renderSummary}
         loading={loading}
@@ -1451,6 +1668,50 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
         }}
         pagination={false}
       />
+      <Modal
+        title="Nhóm chi phí phát sinh khi lưu hạch toán"
+        open={incidentalPreviewOpen}
+        onCancel={() => setIncidentalPreviewOpen(false)}
+        footer={null}
+        width="92vw"
+        style={{ top: 32 }}
+      >
+        <Table
+          size="small"
+          rowKey="key"
+          dataSource={incidentalPreviewRows}
+          columns={incidentalPreviewColumns}
+          pagination={false}
+          scroll={{ x: 1380, y: '68vh' }}
+          summary={rows => {
+            const cash = rows.reduce((sum, item) => sum + item.cash, 0);
+            const transfer = rows.reduce((sum, item) => sum + item.transfer, 0);
+            const debt = rows.reduce((sum, item) => sum + item.debt, 0);
+            const total = rows.reduce((sum, item) => sum + item.total, 0);
+            return (
+              <Table.Summary fixed>
+                <Table.Summary.Row>
+                  <Table.Summary.Cell index={0} colSpan={4}>
+                    <strong>Tổng cộng</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={4} align="right">
+                    <strong>{cash.toLocaleString('en-US')}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={5} align="right">
+                    <strong>{transfer.toLocaleString('en-US')}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={6} align="right">
+                    <strong>{debt.toLocaleString('en-US')}</strong>
+                  </Table.Summary.Cell>
+                  <Table.Summary.Cell index={7} align="right">
+                    <strong>{total.toLocaleString('en-US')}</strong>
+                  </Table.Summary.Cell>
+                </Table.Summary.Row>
+              </Table.Summary>
+            );
+          }}
+        />
+      </Modal>
     </div>
   );
 });

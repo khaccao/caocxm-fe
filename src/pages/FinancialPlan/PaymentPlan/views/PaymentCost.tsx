@@ -33,6 +33,7 @@ import {
   IncidentalCostByRangeDate,
   InvoiceDto,
 } from '@/services/AccountingInvoiceService';
+import { EmployeeService } from '@/services/EmployeeService';
 import { ProjectService } from '@/services/ProjectService';
 import { accountingInvoiceActions, getDateFilterOptions, getWareHouses } from '@/store/accountingInvoice';
 import { getCurrentCompany } from '@/store/app';
@@ -40,7 +41,12 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { getLoading } from '@/store/loading';
 import Utils from '@/utils';
 import { firstValueFrom } from 'rxjs';
-import { getProjectIdByWarehouse, toNumber } from '../../components/PlanTable/utils';
+import {
+  formatIntegerMoneyInput,
+  getProjectIdByWarehouse,
+  parseIntegerMoneyInput,
+  toNumber,
+} from '../../components/PlanTable/utils';
 import {
   buildCategoryType,
   buildGhiChu,
@@ -108,6 +114,7 @@ export interface IGroupRecord {
   type?: number;
   total_Expenditure?: number | string | null;
   paymentType?: number;
+  periodCode?: string;
   hoaDonVAT?: InvoiceDto[];
   list_of_extensions?: ExtensionDTO[];
   maKho?: string;
@@ -122,6 +129,8 @@ export interface IGroupRecord {
   chiTietDeNghiMuaHang?: ChiTietDeNghiMuaHangDTO[];
   debt?: string | number | null;
   createDate?: string;
+  startDate?: string;
+  endDate?: string;
   ma_nv_bh?: string;
   ma_kh?: string;
   ncc?: string;
@@ -660,6 +669,10 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
       note: s.notes,
       contentCode: s.contentCode,
       paymentType: s.paymentType,
+      periodCode: s.periodCode,
+      type: s.type,
+      startDate: s.startDate,
+      endDate: s.endDate,
       isSalaryItem: true,
     }));
 
@@ -786,14 +799,17 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
     return (
       <InputNumber<number>
         type="n"
+        precision={0}
         style={{ textAlign: 'center', width: '100%' }}
-        formatter={value => {
-          if (!value) return '';
-          const numValue = Number(value.toString().replace(/,/g, ''));
-          return `${numValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-        }}
+        formatter={formatIntegerMoneyInput}
+        parser={value => parseIntegerMoneyInput(value)}
         value={_text === null || _text === undefined || _text === '' ? null : _text}
         onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (['e', 'E', '-'].includes(event.key)) {
+            event.preventDefault();
+            return;
+          }
+
           if (/^\d$/.test(event.key)) {
             inputSource = 'keyboard';
           }
@@ -881,6 +897,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
             const newData = prevData.map(row => (row.key === record.key ? updatedRecord : row));
             return newData;
           });
+          onUpdateButtonState?.();
         }}
         autoSize={{ minRows: 1, maxRows: 3 }}
       />
@@ -1189,15 +1206,17 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
   };
 
     const handleSave = async (): Promise<boolean> => {
-      const raw = dataSource
-        .filter(item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup)
-        .filter(item => {
-          const money = toNumber(item.money);
-          const cash = toNumber(item.total_Expenditure);
-          const transfer = toNumber(item.transfer);
-          const debt = toNumber(item.debt);
-          return money > 0 || cash > 0 || transfer > 0 || debt > 0;
-        });
+      const allRows = dataSource.filter(
+        item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup,
+      );
+      const salaryRows = allRows.filter(item => item.isSalaryItem);
+      const raw = allRows.filter(item => {
+        const money = toNumber(item.money);
+        const cash = toNumber(item.total_Expenditure);
+        const transfer = toNumber(item.transfer);
+        const debt = toNumber(item.debt);
+        return money > 0 || cash > 0 || transfer > 0 || debt > 0;
+      });
 
       if (!raw.length) {
         Utils.errorNotification('Không có dữ liệu để tạo chứng từ.');
@@ -1238,6 +1257,8 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
         const cash = toNumber(item.total_Expenditure);
         const transfer = toNumber(item.transfer);
         const debt = toNumber(item.debt);
+        const accountingNote =
+          item.note === null || item.note === undefined ? buildGhiChu(item) : String(item.note).trim();
         
         const itemRequest: CreateAcountingInvoiceRequestDTO = {
           guid: item.guid ?? '',
@@ -1263,14 +1284,14 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           employeeName: item.employeeName ?? '',
           createdById: item.createdById ?? '',
           maDT: buildMaDoiTuong(item),
-          note: item.note ?? '',
+          note: accountingNote,
           contentCode: item.contentCode ?? '',
           additionalCostGroupMode: categoryType === 5 ? (item.additionalCostGroupMode ?? incidentalGroupMode) : undefined,
         };
         listRequest.push(itemRequest);
       });
 
-      const salaryUpdateItems = raw.map(item => {
+      const salaryUpdateItems = salaryRows.map(item => {
           if (item.isSalaryItem) {
             const findItem = employeeSalariesPays?.find(s => s.folioID === item.guid);
             const money = toNumber(item.money);
@@ -1278,24 +1299,24 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
             const transfer = toNumber(item.transfer);
             
             const temp: IEmployeeSalariesPayDTO = {
-              companyId: findItem?.companyId ?? 0,
-              contentName: findItem?.contentName ?? '',
-              contentCode: findItem?.contentCode ?? '',
-              unit: findItem?.unit ?? '',
+              companyId: findItem?.companyId ?? company.orgId,
+              contentName: findItem?.contentName ?? String(item.name ?? ''),
+              contentCode: findItem?.contentCode ?? item.contentCode ?? '',
+              unit: findItem?.unit ?? item.unit ?? '',
               createdBy: findItem?.createdBy ?? '',
-              notes: findItem?.notes ?? '',
+              notes: String(item.note ?? '').trim(),
               createdById: findItem?.createdById ?? 0,
-              createDate: findItem?.createDate ?? '',
+              createDate: findItem?.createDate ?? item.createDate ?? '',
               amount: cash,
               transfer: transfer,
               quantity: findItem?.quantity ?? 0,
               totalAmount: money,
-              folioID: findItem?.folioID ?? '',
+              folioID: findItem?.folioID ?? item.guid ?? '',
               paymentType: findItem?.paymentType ?? 0,
-              periodCode: findItem?.periodCode ?? '',
-              type: findItem?.type ?? 0,
-              startDate: findItem?.startDate ?? '',
-              endDate: findItem?.endDate ?? '',
+              periodCode: findItem?.periodCode ?? item.periodCode ?? '',
+              type: findItem?.type ?? item.type ?? 0,
+              startDate: findItem?.startDate ?? item.startDate ?? '',
+              endDate: findItem?.endDate ?? item.endDate ?? '',
             };
             return temp;
           }
@@ -1336,7 +1357,8 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
           employeeIds: BCHEmployeeIds,
         },
       ];
-        dispatch(employeeActions.updateEmployeeSalariesPaysRequest({ companyId: company.orgId, body: salaryUpdateItems, bodyGet }));
+        await firstValueFrom(EmployeeService.Put.updateEmployeeSalariesPays(company.orgId, salaryUpdateItems));
+        dispatch(employeeActions.getEmployeeSalariesPaysRequest({ companyId: company.orgId, body: bodyGet }));
       }
       if (listRequest.length) {
         try {

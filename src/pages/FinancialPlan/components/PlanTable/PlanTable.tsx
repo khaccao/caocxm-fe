@@ -52,7 +52,7 @@ import {
   splitByField,
   TPaymentKind,
 } from './helper';
-import { getProjectIdByWarehouse, toNumber } from './utils';
+import { formatIntegerMoneyInput, getProjectIdByWarehouse, parseIntegerMoneyInput, toNumber } from './utils';
 import { buildCategoryType } from '../../PaymentPlan/helper/payment-plan';
 
 dayjs.extend(isBetween);
@@ -830,14 +830,17 @@ const PlanTable = forwardRef(function PlanTable(
     return (
       <InputNumber<number>
         type="n"
+        precision={0}
         style={{ textAlign: 'center', width: '100%' }}
-        formatter={value => {
-          if (!value) return '';
-          const numValue = Number(value.toString().replace(/,/g, ''));
-          return `${numValue.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`;
-        }}
+        formatter={formatIntegerMoneyInput}
+        parser={value => parseIntegerMoneyInput(value)}
         value={_text === null || _text === undefined || _text === '' ? null : _text}
         onKeyDown={(event: React.KeyboardEvent<HTMLInputElement>) => {
+          if (['e', 'E', '-'].includes(event.key)) {
+            event.preventDefault();
+            return;
+          }
+
           if (/^\d$/.test(event.key)) {
             inputSource = 'keyboard';
           }

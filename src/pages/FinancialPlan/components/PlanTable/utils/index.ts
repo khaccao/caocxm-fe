@@ -13,6 +13,23 @@ export const toNumber = (v: unknown): number => {
   return isFinite(n) ? n : 0;
 };
 
+export const parseIntegerMoneyInput = (value: string | undefined): number => {
+  if (!value) return 0;
+
+  const digits = value.replace(/[^\d]/g, '');
+  if (!digits) return 0;
+
+  const parsed = Number(digits);
+  return Number.isFinite(parsed) ? parsed : 0;
+};
+
+export const formatIntegerMoneyInput = (value: string | number | undefined): string => {
+  if (value === null || value === undefined || value === '') return '';
+
+  const parsed = parseIntegerMoneyInput(String(value));
+  return parsed ? parsed.toLocaleString('en-US') : '';
+};
+
 // find projectId based on warehouse code
 export async function getProjectIdByWarehouse(
   maKho: string | undefined,

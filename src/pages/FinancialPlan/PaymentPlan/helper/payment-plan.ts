@@ -28,6 +28,8 @@ export interface CostItem {
   ma_kh?: string;
   ncc?: string;
   maKM?: string;
+  tkNo?: string | null;
+  tkCo?: string | null;
   isSalaryItem?: boolean;
   additionalCostGroupMode?: 'date' | 'project';
   sourceProposal?: any;
@@ -97,6 +99,8 @@ export const pushGroup = (
       ma_kh: it.ma_kh || '',
       ncc: it.ncc ? it.ncc : '',
       maKM: it.maKM || '',
+      tkNo: it.tkNo || '',
+      tkCo: it.tkCo || '',
       isSalaryItem: it.isSalaryItem ?? false,
       sourceProposal: it.sourceProposal,
       id: it.id ?? 0,
@@ -111,8 +115,14 @@ export const mapPaymentToInvoiceType = (kind: TPaymentKind) => (kind === 'cash' 
 export const mapPaymentToTkCo = (kind: TPaymentKind) => (kind === 'cash' ? '1111' : '11211');
 
 export const buildTkNo = (item: IGroupRecord) => {
+  if (item.tkNo) return item.tkNo;
   return tkNoMap[item.categoryCode] ?? '';
 
+}
+
+export const buildTkCo = (item: IGroupRecord, kind: TPaymentKind) => {
+  if (item.tkCo) return item.tkCo;
+  return mapPaymentToTkCo(kind);
 }
 
 export const groupItemsByCategoryCode = (items: IGroupRecord[]) => {
@@ -127,7 +137,7 @@ export const groupItemsByCategoryCode = (items: IGroupRecord[]) => {
 
 export const buildCategoryType = (item: IGroupRecord) => {
   const isSubContractor = (item: IGroupRecord) =>
-    !!item.subContractorCode && item.subContractorCode.startsWith('NTP');
+    item.categoryCode === CategoryCodes.subcontractorAdvance && !!item.subContractorCode;
   const UngTien = item?.type === 1;
   switch (item.categoryCode) {
     case CategoryCodes.MainMaterial:
@@ -181,6 +191,13 @@ export const buildGhiChu = (item: IGroupRecord) => {
         item.createdById,
         item.projectName,
       ].filter(Boolean).join(' - ');
+    case CategoryCodes.subcontractorAdvance:
+      return [
+        'Thanh toán thầu phụ',
+        item.name,
+        item.subContractorCode ? `Mã ${item.subContractorCode}` : '',
+        item.projectCode,
+      ].filter(Boolean).join(' - ');
     default:
       return [
         'Thanh toán chi mua khác',
@@ -200,6 +217,8 @@ export const buildMaDoiTuong = (item: IGroupRecord) => {
       return item.ma_kh || '';
     case CategoryCodes.Incidental:
       return item.ncc || '';
+    case CategoryCodes.subcontractorAdvance:
+      return item.ma_kh || item.ncc || item.subContractorCode || '';
     default:
       return item.employerCode || '';
   }
@@ -214,6 +233,8 @@ export const buildMaKM = (item: IGroupRecord) => {
       return item.projectCode || '';
     case CategoryCodes.Incidental:
       return item.maKM || '';
+    case CategoryCodes.subcontractorAdvance:
+      return item.maKM || item.projectCode || '';
     default:
       return item.projectCode || '';
   }

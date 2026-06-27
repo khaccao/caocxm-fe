@@ -31,6 +31,10 @@ import {
   InvoiceDto,
 } from '@/services/AccountingInvoiceService';
 import { ProjectService } from '@/services/ProjectService';
+import {
+  ProjectSubContractorAssignmentService,
+  ProjectSubContractorPaymentResponse,
+} from '@/services/ProjectSubContractorAssignmentService';
 import { accountingInvoiceActions, getDateFilterOptions, getWareHouses } from '@/store/accountingInvoice';
 import { getCurrentCompany } from '@/store/app';
 import { documentActions, getBudgetEstimateByProject } from '@/store/documents';
@@ -84,6 +88,68 @@ const buildStableGuid = (input: string): string => {
 const normalizeGuid = (value?: string | null): string => {
   if (value && value !== ZERO_GUID) return value;
   return '';
+};
+
+const getSubContractorDebtKey = (item: ProjectSubContractorPaymentResponse) => String(item.id || item.guid || '');
+
+const extractDebtAmount = (response: any): number => {
+  const preferredKeys = [
+    'congNo',
+    'cong_no',
+    'congNoCuoiKy',
+    'cong_no_cuoi_ky',
+    'soDuCuoiKy',
+    'so_du_cuoi_ky',
+    'duNoCuoiKy',
+    'du_no_cuoi_ky',
+    'duCoCuoiKy',
+    'du_co_cuoi_ky',
+    'du_no_cuoi',
+    'du_co_cuoi',
+    'so_du_no',
+    'so_du_co',
+    'duNo',
+    'du_no',
+    'duCo',
+    'du_co',
+    'closingBalance',
+    'balance',
+    'amount',
+  ];
+  const numbers: number[] = [];
+
+  const visit = (value: any) => {
+    if (!value) return;
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          visit(JSON.parse(trimmed));
+        } catch {
+          // Ignore plain text values from report API.
+        }
+      }
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (typeof value !== 'object') return;
+
+    preferredKeys.forEach(key => {
+      const raw = value[key];
+      const num = typeof raw === 'number' ? raw : Number(String(raw ?? '').replace(/[^\d.-]/g, ''));
+      if (Number.isFinite(num) && num !== 0) numbers.push(Math.abs(num));
+    });
+
+    Object.values(value).forEach(child => {
+      if (child && typeof child === 'object') visit(child);
+    });
+  };
+
+  visit(response);
+  return numbers.length ? Math.max(...numbers) : 0;
 };
 
 // ----------------------------------------------------------------
@@ -148,6 +214,8 @@ export interface IGroupRecord {
   debt?: string | number | null;
   ma_kh?: string;
   ncc?: string;
+  tkNo?: string | null;
+  tkCo?: string | null;
   contentCode?: any;
   isNTP?: boolean;
   sourceProposal?: ProposalData;
@@ -170,6 +238,8 @@ const PlanTable = forwardRef(function PlanTable(
   const dateFilterOptions = useAppSelector(getDateFilterOptions());
 
   const [dataSource, setDataSource] = useState<IGroupRecord[]>([]);
+  const [approvedSubContractorPayments, setApprovedSubContractorPayments] = useState<ProjectSubContractorPaymentResponse[]>([]);
+  const [subContractorDebtByPaymentId, setSubContractorDebtByPaymentId] = useState<Record<string, number>>({});
 
   useImperativeHandle(ref, () => ({
     handleSave,
@@ -257,6 +327,29 @@ const PlanTable = forwardRef(function PlanTable(
     return selectMonth.date(paymentDay).format(FormatDateAPI);
   }, [selectMonth, currentPeriod]);
 
+  const subContractorPaymentPeriodCode = useMemo(() => {
+    switch (typeEFinancialPlan) {
+      case EFinancialPlan.KeHoachThanhToan05:
+        return 'Ky1';
+      case EFinancialPlan.KeHoachTamUng12:
+        return 'Ky2';
+      case EFinancialPlan.KeHoachThanhToan20:
+        return 'Ky3';
+      case EFinancialPlan.KeHoachTamUng27:
+        return 'Ky4';
+      default:
+        return '';
+    }
+  }, [typeEFinancialPlan]);
+
+  const selectedMonthRange = useMemo(() => {
+    if (!selectMonth) return null;
+    return {
+      startDate: selectMonth.startOf('month').format(FormatDateAPI),
+      endDate: selectMonth.endOf('month').format(FormatDateAPI),
+    };
+  }, [selectMonth]);
+
   // Tính VTPMMDateRange từ period config (dùng cùng period với dateRange)
   const VTPMMDateRange = useMemo(() => {
     if (!selectMonth || !currentPeriod) return null;
@@ -291,6 +384,77 @@ const PlanTable = forwardRef(function PlanTable(
       }),
     );
   }, [VTPMMDateRange]);
+
+  useEffect(() => {
+    if (!subContractorPaymentPeriodCode || !selectedMonthRange) {
+      setApprovedSubContractorPayments([]);
+      return;
+    }
+
+    ProjectSubContractorAssignmentService.Payment.getApprovedForPaymentPlan(
+      subContractorPaymentPeriodCode,
+      selectedMonthRange.startDate,
+      selectedMonthRange.endDate,
+    ).subscribe({
+      next: result => setApprovedSubContractorPayments(Array.isArray(result) ? result : []),
+      error: error => {
+        console.error(error);
+        setApprovedSubContractorPayments([]);
+      },
+    });
+  }, [subContractorPaymentPeriodCode, selectedMonthRange]);
+
+  useEffect(() => {
+    if (!approvedSubContractorPayments.length || !selectedMonthRange) {
+      setSubContractorDebtByPaymentId({});
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadSubContractorDebt = async () => {
+      const entries = await Promise.all(
+        approvedSubContractorPayments.map(async item => {
+          const key = getSubContractorDebtKey(item);
+          const accountCode = item.tkCo || item.tkNo || '331';
+          const customerCode = item.accountingCustomerCode || item.contractorCode || '';
+
+          if (!key || !accountCode || !customerCode) {
+            return [key, 0] as const;
+          }
+
+          try {
+            const response = await firstValueFrom(
+              AccountingInvoiceService.Post.getBaoCaoChiTietCongNo({
+                ma_tai_khoan: accountCode,
+                tu_ngay: selectedMonthRange.startDate,
+                den_ngay: selectedMonthRange.endDate,
+                madvcs: 'THUCHIEN',
+                ma_cong_trinh: item.projectCode || item.kProjectCode || '',
+                ma_vu_viec: (item as any).workItemCode || (item as any).maVuViec || '',
+                ma_khach_hang: customerCode,
+              }),
+            );
+
+            return [key, extractDebtAmount(response)] as const;
+          } catch (error) {
+            console.error('Failed to fetch subcontractor debt', error);
+            return [key, 0] as const;
+          }
+        }),
+      );
+
+      if (!isCancelled) {
+        setSubContractorDebtByPaymentId(Object.fromEntries(entries.filter(([key]) => key)));
+      }
+    };
+
+    loadSubContractorDebt();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [approvedSubContractorPayments, selectedMonthRange]);
 
   const optsMayMoc = dateRange ? { dateRange } : {};
   const optsVatTuPhu = dateRange ? { dateRange } : {};
@@ -763,6 +927,88 @@ const PlanTable = forwardRef(function PlanTable(
       incGroupIndex,
     );
 
+    const subContractorPaymentItems = approvedSubContractorPayments.map(item => {
+      const amount = Number(item.currentActualPaymentValue || item.currentRequestedPaymentValue || item.fCurrentPaidValue || 0);
+      const rawDebt = subContractorDebtByPaymentId[getSubContractorDebtKey(item)] || 0;
+      const debt = Math.min(Math.max(rawDebt, 0), amount);
+      const transfer = Math.max(amount - debt, 0);
+      return {
+        guid: item.guid || undefined,
+        id: item.id,
+        name: item.contractorName || item.contractorFullName || item.contractorCode || item.description || 'Thanh toĂ¡n tháº§u phá»¥',
+        money: amount,
+        transfer,
+        total_Expenditure: 0,
+        debt,
+        createDate: item.paymentDate || item.createdDate || paymentTermDate,
+        paymentTermDate: item.paymentDate || paymentTermDate,
+        projectCode: item.projectCode || item.kProjectCode || '',
+        projectName: item.projectCode || item.kProjectCode || '',
+        projectId: item.projectCode || item.kProjectCode || '',
+        subContractorCode: item.contractorCode || '',
+        subContractorId: item.contractorCatalogId ? Number(item.contractorCatalogId) : undefined,
+        ma_kh: item.accountingCustomerCode || '',
+        ncc: item.contractorName || item.contractorFullName || '',
+        tkNo: item.tkNo || null,
+        tkCo: item.tkCo || null,
+        note: item.description || item.note || `Thanh toĂ¡n tháº§u phá»¥ ${item.contractorName || item.contractorCode || ''}`,
+        contentCode: item.expenseItemCode || item.paymentCatalogCode || item.contractorTypeCode || '',
+        isNTP: true,
+      } satisfies CostItem & Partial<IGroupRecord>;
+    });
+
+    if (subContractorPaymentItems.length) {
+      const totals = subContractorPaymentItems.reduce(
+        (acc, item) => ({
+          money: acc.money + Number(item.money || 0),
+          transfer: acc.transfer + Number(item.transfer || 0),
+          cash: acc.cash + Number(item.total_Expenditure || 0),
+          debt: acc.debt + Number(item.debt || 0),
+        }),
+        { money: 0, transfer: 0, cash: 0, debt: 0 },
+      );
+      const curIndex = incGroupIndex();
+      result.push({
+        key: 'group-subcontractor-payment',
+        STT: getRoman(),
+        categoryCode: CategoryCodes.subcontractorAdvance,
+        name: 'Thanh toán thầu phụ đã duyệt',
+        isGroup: true,
+        money: totals.money.toLocaleString('en-US'),
+        transfer: totals.transfer.toLocaleString('en-US'),
+        total_Expenditure: totals.cash.toLocaleString('en-US'),
+        debt: totals.debt.toLocaleString('en-US'),
+      });
+
+      subContractorPaymentItems.forEach((item, idx) => {
+        result.push({
+          ...item,
+          key: `subcontractor-payment-${item.id || idx}`,
+          STT: `${curIndex}.${idx + 1}`,
+          categoryCode: CategoryCodes.subcontractorAdvance,
+          name: item.name,
+          isGroup: false,
+          money: Number(item.money || 0).toLocaleString('en-US'),
+          transfer: Number(item.transfer || 0).toLocaleString('en-US'),
+          total_Expenditure: Number(item.total_Expenditure || 0).toLocaleString('en-US'),
+          debt: Number(item.debt || 0).toLocaleString('en-US'),
+          unit: 'VNĐ',
+          paymentTermDate: item.paymentTermDate,
+          createDate: item.createDate,
+          projectName: item.projectName || '',
+          projectId: item.projectId || '',
+          projectCode: item.projectCode || '',
+          ma_kh: item.ma_kh || '',
+          ncc: item.ncc || '',
+          note: item.note,
+          contentCode: item.contentCode || '',
+          isNTP: true,
+          tkNo: item.tkNo,
+          tkCo: item.tkCo,
+        });
+      });
+    }
+
     const grand = result.reduce(
       (acc, r) => {
         if (r.isGroup) return acc;
@@ -1102,11 +1348,9 @@ const PlanTable = forwardRef(function PlanTable(
   ]);
 
   useEffect(() => {
-    if (budgetEstimateByProjectDate && budgetEstimateByProjectDate.length > 0) {
-      setDataSource(addSTT(budgetEstimateByProjectDate));
-    }
+    setDataSource(addSTT(budgetEstimateByProjectDate || []));
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [budgetEstimateByProjectDate, filteredCosts, mayMocItems, vatTuPhuItems, vatTuChinhItems]);
+  }, [budgetEstimateByProjectDate, filteredCosts, mayMocItems, vatTuPhuItems, vatTuChinhItems, approvedSubContractorPayments, subContractorDebtByPaymentId]);
 
   const prepareChiTietHachToan = (items: IGroupRecord[], kind: TPaymentKind): ChiTietHachToanDTO[] => {
     return items.map(item => {
@@ -1277,6 +1521,23 @@ const PlanTable = forwardRef(function PlanTable(
     }
   };
 
+  const persistSubContractorAccountingStatus = async (items: IGroupRecord[]) => {
+    const subContractorRows = items.filter(item => item.categoryCode === CategoryCodes.subcontractorAdvance && item.isNTP && item.id);
+    if (!subContractorRows.length) return;
+
+    await Promise.all(
+      subContractorRows.map(item =>
+        firstValueFrom(ProjectSubContractorAssignmentService.Payment.markAccounted(item.id!, {
+          note: 'Da luu hach toan tu ke hoach tam ung',
+          paidAt: item.paymentTermDate || item.createDate || null,
+          paidCash: toNumber(item.total_Expenditure) ?? 0,
+          paidTransfer: toNumber(item.transfer) ?? 0,
+          paidOther: toNumber(item.debt) ?? 0,
+        })),
+      ),
+    );
+  };
+
   const handleSave = async (): Promise<boolean> => {
     const raw = dataSource
       .filter(item => item.key !== 'group-total' && item.key !== 'group-transfer' && !item.isGroup)
@@ -1338,6 +1599,7 @@ const PlanTable = forwardRef(function PlanTable(
       await Promise.all([
         persistProposalPaymentValues(raw),
         persistAdditionalCostPaymentValues(raw),
+        persistSubContractorAccountingStatus(raw),
       ]);
     } catch (error) {
       console.error(error);

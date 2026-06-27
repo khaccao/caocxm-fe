@@ -31,6 +31,14 @@ const CompanyEmployee = lazyComponent(() => import('@/pages/CompanyEmployee'));
 const CompanyGroup = lazyComponent(() => import('@/pages/CompanyGroup'), 'CompanyGroup');
 const PayrollTeams = lazyComponent(() => import('@/pages/PayrollTeams'), 'PayrollTeams');
 const SubContractorTypes = lazyComponent(() => import('@/pages/SubContractorTypes'), 'SubContractorTypes');
+const SubContractorCatalogs = lazyComponent(() => import('@/pages/SubContractorCatalogs'), 'SubContractorCatalogs');
+const PaymentPeriods = lazyComponent(() => import('@/pages/PaymentPeriods'), 'PaymentPeriods');
+const AccountingAccounts = lazyComponent(() => import('@/pages/AccountingAccounts'), 'AccountingAccounts');
+const AccountingCustomers = lazyComponent(() => import('@/pages/AccountingCustomers'), 'AccountingCustomers');
+const ProjectSubContractorAssignments = lazyComponent(
+  () => import('@/pages/ProjectSubContractorAssignments'),
+  'ProjectSubContractorAssignments',
+);
 const FileUpload = lazyComponent(() => import('@/pages/Components'), 'FileUpload');
 const ViewFileNotOffice = lazyComponent(() => import('@/pages/Components'), 'ViewFileNotOffice');
 const ConstructionMagazine = lazyComponent(() => import('@/pages/ConstructionMagazine'));
@@ -238,6 +246,12 @@ export const projectRouters: MetaMenuAuthRouteObject[] = [
         auth: ['ThanhToanThauPhu_27.View'],
       },
       {
+        element: <PaytheSubcontractors />,
+        name: 'Subcontractor payments',
+        path: '/projects/subcontractors/payments/:periodCode/:detailId',
+        auth: ['HopDongThauPhu.View'],
+      },
+      {
         element: <AggregateCosts />,
         name: 'Inventory report',
         path: '/projects/subcontractors/aggregate-costs',
@@ -247,6 +261,12 @@ export const projectRouters: MetaMenuAuthRouteObject[] = [
         element: <SubContractorTypes />,
         name: 'Subcontractor types',
         path: '/projects/subcontractors/types',
+        auth: ['HopDongThauPhu.View'],
+      },
+      {
+        element: <ProjectSubContractorAssignments />,
+        name: 'Project subcontractor assignments',
+        path: '/projects/subcontractors/assignments',
         auth: ['HopDongThauPhu.View'],
       },
       {
@@ -407,6 +427,43 @@ export const routers: MetaMenuAuthRouteObject[] = [
         name: 'Shift Templates',
         path: '/shift-templates',
         auth: ['CaLamViec.View'],
+      },
+      {
+        element: <Outlet />,
+        name: 'System categories',
+        path: '/system-categories',
+        children: [
+          {
+            element: <SubContractorTypes />,
+            name: 'Subcontractor types',
+            path: '/system-categories/subcontractor-types',
+            auth: ['HopDongThauPhu.View'],
+          },
+          {
+            element: <SubContractorCatalogs />,
+            name: 'Subcontractor catalog',
+            path: '/system-categories/subcontractors',
+            auth: ['HopDongThauPhu.View'],
+          },
+          {
+            element: <PaymentPeriods />,
+            name: 'Payment periods',
+            path: '/system-categories/payment-periods',
+            auth: ['KeHoachTaiChinh.ThanhToan.View'],
+          },
+          {
+            element: <AccountingAccounts />,
+            name: 'Accounting accounts',
+            path: '/system-categories/accounting-accounts',
+            auth: ['KeHoachTaiChinh.ThanhToan.View'],
+          },
+          {
+            element: <AccountingCustomers />,
+            name: 'Accounting customers',
+            path: '/system-categories/accounting-customers',
+            auth: ['HopDongThauPhu.View'],
+          },
+        ],
       },
       {
         element: <CapabilityProfile />,
@@ -575,6 +632,12 @@ export const routers: MetaMenuAuthRouteObject[] = [
             element: <UnionExpenseTable />,
             name: 'Union funds expenses report',
             path: '/union-welfare-funds/expenses',
+            auth: ['CongDoan.ChiQuyCD.View'],
+          },
+          {
+            element: <UnionExpenseTable mode="approval" />,
+            name: 'Approve union expense proposals',
+            path: '/union-welfare-funds/expense-approvals',
             auth: ['CongDoan.ChiQuyCD.View'],
           },
           {

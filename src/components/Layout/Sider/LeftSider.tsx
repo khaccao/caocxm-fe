@@ -1,6 +1,8 @@
 ﻿/* eslint-disable import/order */
 import { useEffect, useState } from 'react';
 
+import { firstValueFrom } from 'rxjs';
+
 import {
   // eslint-disable-next-line
   DashboardOutlined,
@@ -28,6 +30,7 @@ import { getEnvVars } from '@/environment';
 import { fullPermissionsRoles } from '@/hooks';
 import ProjectBg from '@/image/icon/project.png';
 import { AccountingInvoiceService } from '@/services/AccountingInvoiceService';
+import { PaymentPeriodService } from '@/services/PaymentPeriodService';
 import { accountingInvoiceActions, getProducts } from '@/store/accountingInvoice';
 import { appActions, getActiveMenu, getCurrentCompany, getGrantedPolicies, getUserRoles, getgetUserIIS } from '@/store/app';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -171,6 +174,7 @@ export const LeftSider = (props: SiderProps) => {
   const [badgeCountVTP, setBadgeCountVTP] = useState(0);
   const [badgeCountMM, setBadgeCountMM] = useState(0);
   const [approvalNotificationMode, setApprovalNotificationMode] = useState(getStoredApprovalNotificationMode());
+  const [subcontractorPaymentMenuItems, setSubcontractorPaymentMenuItems] = useState<MenuItem[]>([]);
 
   const company = useAppSelector(getCurrentCompany());
   const additionalCosts = useAppSelector((state: RootState) => state.accountingInvoice.AdditionalCosts) || [];
@@ -186,6 +190,59 @@ export const LeftSider = (props: SiderProps) => {
     return () => {
       window.removeEventListener(APPROVAL_NOTIFICATION_MODE_EVENT, syncApprovalNotificationMode);
       window.removeEventListener('storage', syncApprovalNotificationMode);
+    };
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
+    const loadSubcontractorPaymentMenu = async () => {
+      try {
+        const periods = await firstValueFrom(PaymentPeriodService.Get.getPeriods());
+        const menuItems = await Promise.all((Array.isArray(periods) ? periods : [])
+          .filter(period => period.id && period.code)
+          .map(async period => {
+            let details: any[] = [];
+            try {
+              details = await firstValueFrom(PaymentPeriodService.Get.getDetails(period.id));
+            } catch {
+              details = [];
+            }
+
+            const activeDetails = details.filter(detail => detail.status !== 1);
+
+            return {
+              label: period.displayName || period.name || period.code,
+              key: `/projects/subcontractors/payments/${period.code}`,
+              auth: ['HopDongThauPhu.View'],
+              children: [
+                {
+                  label: 'Tất cả dòng trong kỳ',
+                  key: `/projects/subcontractors/payments/${period.code}/all`,
+                  auth: ['HopDongThauPhu.View'],
+                },
+                ...activeDetails.map(detail => ({
+                  label: detail.displayName || detail.catalogName || detail.catalogCode,
+                  key: `/projects/subcontractors/payments/${period.code}/${detail.id}`,
+                  auth: ['HopDongThauPhu.View'],
+                }))
+              ],
+            } as MenuItem;
+          }));
+
+        if (mounted) {
+          setSubcontractorPaymentMenuItems(menuItems);
+        }
+      } catch {
+        if (mounted) {
+          setSubcontractorPaymentMenuItems([]);
+        }
+      }
+    };
+
+    loadSubcontractorPaymentMenu();
+    return () => {
+      mounted = false;
     };
   }, []);
 
@@ -519,6 +576,11 @@ export const LeftSider = (props: SiderProps) => {
           auth: ['CongDoan.ChiQuyCD.View'],
         },
         {
+          label: t('Approve union expense proposals'),
+          key: '/union-welfare-funds/expense-approvals',
+          auth: ['CongDoan.ChiQuyCD.View'],
+        },
+        {
           label: t('Tet and holiday bonus expenses'),
           key: '/union-welfare-funds/bonus',
           auth: ['CongDoan.CPLeTet.View'],
@@ -674,6 +736,38 @@ export const LeftSider = (props: SiderProps) => {
       icon: <SnippetsOutlined />,
       key: '/manager-news',
       auth: ['QuanLyTinTuc.View'],
+    },
+    {
+      label: 'Quản lý danh mục hệ thống',
+      icon: <SettingOutlined />,
+      key: '/system-categories',
+      children: [
+        {
+          label: 'Loại nhà thầu',
+          key: '/system-categories/subcontractor-types',
+          auth: ['HopDongThauPhu.View'],
+        },
+        {
+          label: 'Danh mục nhà thầu',
+          key: '/system-categories/subcontractors',
+          auth: ['HopDongThauPhu.View'],
+        },
+        {
+          label: 'Kỳ thanh toán',
+          key: '/system-categories/payment-periods',
+          auth: ['KeHoachTaiChinh.ThanhToan.View'],
+        },
+        {
+          label: 'Danh sách tài khoản',
+          key: '/system-categories/accounting-accounts',
+          auth: ['KeHoachTaiChinh.ThanhToan.View'],
+        },
+        {
+          label: 'Danh sách khách hàng',
+          key: '/system-categories/accounting-customers',
+          auth: ['HopDongThauPhu.View'],
+        },
+      ],
     },
     {
       label: t('Capability Profile'),
@@ -866,14 +960,29 @@ export const LeftSider = (props: SiderProps) => {
           auth: ['HopDongThauPhu.View'],
         },
         {
-          label: t('Pay the subcontractor 12'),
-          key: '/projects/subcontractors/pay-the-subcontractor-12',
-          auth: ['ThanhToanThauPhu_12.View'],
-        },
-        {
-          label: t('Pay the subcontractor 27'),
-          key: '/projects/subcontractors/pay-the-subcontractor-27',
-          auth: ['ThanhToanThauPhu_27.View'],
+          label: 'Thanh toán thầu phụ',
+          key: '/projects/subcontractors/payments',
+          auth: ['HopDongThauPhu.View'],
+          children: [
+            {
+              label: t('Pay the subcontractor 12'),
+              key: '/projects/subcontractors/pay-the-subcontractor-12',
+              auth: ['ThanhToanThauPhu_12.View'],
+            },
+            {
+              label: t('Pay the subcontractor 27'),
+              key: '/projects/subcontractors/pay-the-subcontractor-27',
+              auth: ['ThanhToanThauPhu_27.View'],
+            },
+            ...(subcontractorPaymentMenuItems.length > 0
+              ? [{
+                label: 'Theo kỳ thanh toán',
+                key: '/projects/subcontractors/payments/by-period',
+                auth: ['HopDongThauPhu.View'],
+                children: subcontractorPaymentMenuItems,
+              } as MenuItem]
+              : []),
+          ],
         },
         {
           label: t('Aggregate costs'),
@@ -883,6 +992,11 @@ export const LeftSider = (props: SiderProps) => {
         {
           label: 'Loại nhà thầu',
           key: '/projects/subcontractors/types',
+          auth: ['HopDongThauPhu.View'],
+        },
+        {
+          label: 'Chọn nhà thầu cho Dự án',
+          key: '/projects/subcontractors/assignments',
           auth: ['HopDongThauPhu.View'],
         },
       ],
@@ -1016,21 +1130,26 @@ export const LeftSider = (props: SiderProps) => {
   useEffect(() => {
     const { pathname } = location;
     const menus: any = authProjectMenu.concat(authBottomMenu).concat(authMainMenu);
-    for (const item of menus) {
-      if (item?.key === pathname) {
-        const { label, key } = item;
-        dispatch(appActions.setActiveMenu({ label, key }));
-      }
-      if (item?.children) {
-        for (const child of item.children) {
-          if (child.key === pathname) {
-            const { label, key } = child;
-            dispatch(appActions.setActiveMenu({ label, key }));
-            if (!collapsed) {
-              setOpenKeys([item.key]);
-            }
-          }
+
+    const findActiveMenu = (items: any[], parents: string[] = []): any => {
+      for (const item of items) {
+        if (item?.key === pathname) {
+          return { item, parents };
         }
+        if (item?.children) {
+          const matched = findActiveMenu(item.children, [...parents, item.key]);
+          if (matched) return matched;
+        }
+      }
+      return null;
+    };
+
+    const matched = findActiveMenu(menus);
+    if (matched) {
+      const { label, key } = matched.item;
+      dispatch(appActions.setActiveMenu({ label, key }));
+      if (!collapsed && matched.parents.length > 0) {
+        setOpenKeys(matched.parents);
       }
     }
     // eslint-disable-next-line

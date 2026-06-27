@@ -32,6 +32,9 @@ const issueServiceRoutes = [
   'api/Issue',
   'api/MaterialApprovalNotification',
   'api/Pcvm',
+  'api/ProjectSubContractorAssignment',
+  'api/SubContractorCatalog',
+  'api/SubContractorType',
   'AssigneeMachineQuota',
   'AssigneeMaterialQuota',
   'AttachmentLink',
@@ -75,6 +78,7 @@ const issueServiceRoutes = [
   'TeamMachineAudit',
   'TeamMaterialAudit',
   'TrackerDim',
+  'UnionExpenseProposal',
   'VATInvoice',
 ];
 

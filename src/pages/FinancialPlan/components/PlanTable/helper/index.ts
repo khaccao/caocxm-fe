@@ -26,6 +26,8 @@ export interface CostItem {
   debt?: number;
   ma_kh?: string;
   ncc?: string;
+  tkNo?: string | null;
+  tkCo?: string | null;
   maKM?: string;
   guid?: string;
   sourceProposal?: any;
@@ -90,6 +92,8 @@ export const pushGroup = (
       nv_bh: it.nv_bh || '',
       ma_kh: it.ma_kh || '',
       ncc: it.ncc ? it.ncc : '',
+      tkNo: it.tkNo || null,
+      tkCo: it.tkCo || null,
       maKM: it.maKM || '',
       sourceProposal: it.sourceProposal,
       debt: it.debt ? it.debt.toLocaleString('en-US') : ((it.money ?? 0) - (it.transfer ?? 0) - (it.total_Expenditure ?? 0)).toLocaleString('en-US'),
@@ -104,12 +108,13 @@ export const mapPaymentToInvoiceType = (kind: TPaymentKind) => (kind === 'cash' 
 export const mapPaymentToTkCo = (kind: TPaymentKind) => (kind === 'cash' ? '1111' : '11211');
 
 export const buildTkNo = (_kind: TPaymentKind, item: IGroupRecord) => {
+  if (item.tkNo) return item.tkNo;
   return tkNoMap[item.categoryCode] ?? (item.employeeName ? '3341' : '3315');
 };
 
 export const groupItemsByCategoryCode = (items: IGroupRecord[]) => {
   const isSubContractor = (item: IGroupRecord) =>
-    !!item.subContractorCode && item.subContractorCode.startsWith('NTP');
+    !!item.subContractorCode || !!item.isNTP || !!item.ncc;
 
   // Lọc CHÍNH XÁC chỉ items thuộc "subcontractor-advance" category
   const planItems = items.filter(
@@ -168,12 +173,11 @@ export const buildMaDoiTuong = (item: IGroupRecord) => {
       return item.ma_kh || '';
     case CategoryCodes.Incidental:
       return item.ncc || '';
-    case 'subContractorAdvance':
-      if (item.subContractorCode && item.subContractorCode.startsWith('NTP')) {
-        return item.subContractorCode || '';
-      } else {
-        return item.employerCode || '';
+    case CategoryCodes.subcontractorAdvance:
+      if (item.isNTP || item.subContractorCode || item.ncc) {
+        return item.ma_kh || item.subContractorCode || '';
       }
+      return item.employerCode || '';
     default:
       return item.employerCode || '';
   }
@@ -187,7 +191,7 @@ export const buildMaKM = (item: IGroupRecord) => {
       return item.projectCode || '';
     case CategoryCodes.Incidental:
       return item.maKM || '';
-    case 'subContractorAdvance':
+    case CategoryCodes.subcontractorAdvance:
       return item.projectCode || '';
     default:
       return item.projectCode || '';

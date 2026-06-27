@@ -470,6 +470,7 @@ export interface IBaoCaoChiTietCongNoDTO {
   ma_cong_trinh?: string;
   ma_vu_viec?: string;
   ma_khach_hang?: string;
+  otherFilter?: string;
 }
 
 export interface IBaoCaoSoCaiSoQuyDTO {
@@ -878,18 +879,18 @@ class AccountingInvoiceController {
       return HttpClient.get(`${accountinginvoiceReportURL}/${url}`, options);
     },
     getBaoCaoChiTietCongNo: (data: IBaoCaoChiTietCongNoDTO, options?: RequestOptions) => {
-      let url = `BaoCaoChiTietCongNo?ma_tai_khoan=${data.ma_tai_khoan}&tu_ngay=${data.tu_ngay}&den_ngay=${data.den_ngay}&madvcs=${data.madvcs}`;
-      if (data?.ma_cong_trinh) {
-        url += `&ma_cong_trinh=${data.ma_cong_trinh}`;
-      }
-      if (data?.ma_vu_viec) {
-        url += `&ma_vu_viec=${data.ma_vu_viec}`;
-      }
-      if (data?.ma_khach_hang) {
-        url += `&ma_khach_hang=${data.ma_khach_hang}`;
-      }
-      url += `&ReportTemplateRecID=360`;
-      return HttpClient.get(`${accountinginvoiceReportURL}/${url}`, options);
+      const params = new URLSearchParams({
+        ma_tai_khoan: data.ma_tai_khoan,
+        tu_ngay: data.tu_ngay,
+        den_ngay: data.den_ngay,
+        madvcs: data.madvcs,
+        ReportTemplateRecID: '360',
+      });
+      if (data?.ma_cong_trinh) params.append('ma_cong_trinh', data.ma_cong_trinh);
+      if (data?.ma_vu_viec) params.append('ma_vu_viec', data.ma_vu_viec);
+      if (data?.ma_khach_hang) params.append('ma_khach_hang', data.ma_khach_hang);
+      if (data?.otherFilter) params.append('otherFilter', data.otherFilter);
+      return HttpClient.get(`${accountinginvoiceReportURL}/BaoCaoChiTietCongNo?${params.toString()}`, options);
     },
     BaoCaoBangCanDoiPhatSinhTaiKhoan: (data: iBaoCaoBangCanDoiPhatSinhTaiKhoan, option?: RequestOptions) => {
       let url = `BaoCaoBangCanDoiPhatSinhTaiKhoan?tu_ngay=${data.tu_ngay}&den_ngay=${data.den_ngay}&madvcs=${data.madvcs}`;
@@ -1086,17 +1087,17 @@ class AccountingInvoiceController {
     },
     getBaoCaoChiTietCongNo: (data: IBaoCaoChiTietCongNoDTO, options?: RequestOptions) => {
       // [#21175][dung_lt][19/12/2024]- API lấy báo cáo chi tiết công nợ
-      let url = `BaoCaoChiTietCongNo?ma_tai_khoan=${data.ma_tai_khoan}&tu_ngay=${data.tu_ngay}&den_ngay=${data.den_ngay}&madvcs=${data.madvcs}`;
-      if (data?.ma_cong_trinh) {
-        url += `&ma_cong_trinh=${data.ma_cong_trinh}`;
-      }
-      if (data?.ma_vu_viec) {
-        url += `&ma_vu_viec=${data.ma_vu_viec}`;
-      }
-      if (data?.ma_khach_hang) {
-        url += `&ma_khach_hang=${data.ma_khach_hang}`;
-      }
-      return HttpClient.post(`${accountingInvoiceURL}/api/${url}`, options);
+      const params = new URLSearchParams({
+        ma_tai_khoan: data.ma_tai_khoan,
+        tu_ngay: data.tu_ngay,
+        den_ngay: data.den_ngay,
+        madvcs: data.madvcs,
+      });
+      if (data?.ma_cong_trinh) params.append('ma_cong_trinh', data.ma_cong_trinh);
+      if (data?.ma_vu_viec) params.append('ma_vu_viec', data.ma_vu_viec);
+      if (data?.ma_khach_hang) params.append('ma_khach_hang', data.ma_khach_hang);
+      if (data?.otherFilter) params.append('otherFilter', data.otherFilter);
+      return HttpClient.post(`${accountingInvoiceURL}/api/BaoCaoChiTietCongNo?${params.toString()}`, undefined, options);
     },
     getBaoCaoSoCaiSoQuy: (data: IBaoCaoSoCaiSoQuyDTO, options?: RequestOptions) => {
       // [#21241][dung_lt][04/01/2025]- API lấy báo cáo sổ cái sổ quý

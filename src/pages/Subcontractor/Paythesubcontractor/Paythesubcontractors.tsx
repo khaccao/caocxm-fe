@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { SearchOutlined } from '@ant-design/icons';
 import { DatePicker, Input, Space, Tabs } from 'antd';
 import dayjs, { Dayjs } from 'dayjs';
+import { useParams } from 'react-router-dom';
 import ContractsTable from 'src/pages/Project/ListSubcontract/components/ContractsTable/ContractsTable';
 
 import { Paythesubcontractor, defaultPagingParams } from '@/common/define';
@@ -13,11 +14,13 @@ import { getFileRoots, getSelectedProject, projectActions } from '@/store/projec
 import PaythesubcontractorList from './components/PaythesubcontractorList';
 
 interface PaythesubcontractorProps {
-  type: Paythesubcontractor;
+  type?: Paythesubcontractor;
 }
 
 export const PaytheSubcontractors = (props: PaythesubcontractorProps) => {
   const { type } = props;
+  const { periodCode, detailId } = useParams();
+  const paymentPeriodDetailId = detailId ? Number(detailId) : null;
 
   const [startDate, setStartDate] = useState<Dayjs | null>(null);
   const [endDate, setEndDate] = useState<Dayjs | null>(null);
@@ -34,28 +37,29 @@ export const PaytheSubcontractors = (props: PaythesubcontractorProps) => {
   const params = useAppSelector(getDocumentQueryParams());
   const path = useAppSelector(getPathDocument());
 
-  const title = type === Paythesubcontractor.ThanhToan12 ? 'Thanh toán thầu phụ 12' : 'Thanh toán thầu phụ 27';
+  const pageTitle = type === Paythesubcontractor.ThanhToan12
+    ? 'Thanh toán thầu phụ 12'
+    : type === Paythesubcontractor.ThanhToan27
+      ? 'Thanh toán thầu phụ 27'
+      : `Thanh toán thầu phụ ${periodCode || ''}`;
 
   const [selectedDates, setSelectedDates] = useState<[Dayjs | null, Dayjs | null] | null>(null);
 
-  // Hàm lấy folderRootId dựa trên type
   const getRootIdByType = useCallback(() => {
-    if (!listDataFileRoots?.results?.length) return null;
+    if (!type || !listDataFileRoots?.results?.length) return null;
     return type === Paythesubcontractor.ThanhToan12
       ? listDataFileRoots.results.find((i: any) => i.name === 'thanhtoanthauphu12')
       : listDataFileRoots.results.find((i: any) => i.name === 'thanhtoanthauphu27');
   }, [listDataFileRoots, type]);
 
-  // Lấy danh sách folder root ID
   useEffect(() => {
-    if (listDataFileRoots?.length === 0) {
+    if (type && listDataFileRoots?.length === 0) {
       dispatch(projectActions.getFolderRootId({ projectId: selectedProject?.id, isGetId: true }));
     }
-  }, [selectedProject, listDataFileRoots]);
+  }, [dispatch, selectedProject, listDataFileRoots, type]);
 
-  // Xử lý logic cho folderRootId khi type thay đổi
   useEffect(() => {
-    if (selectedProject) {
+    if (type && selectedProject) {
       const rootId = getRootIdByType();
       if (rootId) {
         dispatch(documentActions.setFolderRootId(rootId.id));
@@ -66,22 +70,21 @@ export const PaytheSubcontractors = (props: PaythesubcontractorProps) => {
       }
       dispatch(documentActions.setDocumentPath([]));
     }
-  }, [dispatch, selectedProject, getRootIdByType]);
+  }, [dispatch, selectedProject, getRootIdByType, type]);
 
-  // Lấy label từ API
   useEffect(() => {
+    if (!type) return;
+
     const lastPath = documentPath?.[documentPath.length - 1];
-    console.log(documentPath, 'lastPath');
     if (lastPath) {
       dispatch(documentActions.getLabelRequest({ documentId: lastPath.id, params: defaultPagingParams }));
     } else if (folderRootId && isCallRef.current) {
       dispatch(documentActions.getLabelRequest({ documentId: folderRootId, params: defaultPagingParams }));
     }
-  }, [dispatch, folderRootId, documentPath, selectedProject]);
+  }, [dispatch, folderRootId, documentPath, selectedProject, type]);
 
-  // Gọi API khi thay đổi ngày hoặc dự án
   useEffect(() => {
-    if (selectedProject) {
+    if (type && selectedProject) {
       const currentDate = dayjs();
       const apiStartDate = startDate
         ? startDate.format('YYYY-MM-DD')
@@ -103,10 +106,6 @@ export const PaytheSubcontractors = (props: PaythesubcontractorProps) => {
     setSelectedDates(dates);
     setStartDate(dates?.[0] ?? null);
     setEndDate(dates?.[1] ?? null);
-  };
-
-  const handleDownload = () => {
-    console.log('Download initiated');
   };
 
   const onSearchChange = (evt: any) => {
@@ -138,7 +137,7 @@ export const PaytheSubcontractors = (props: PaythesubcontractorProps) => {
         onChange={handleRangeChange}
         className="date-picker"
       />
-    ) : activeKey === '2' ? (
+    ) : activeKey === '2' && type ? (
       <Space style={{ marginRight: '120px' }}>
         <Input
           value={searchStr}
@@ -160,30 +159,38 @@ export const PaytheSubcontractors = (props: PaythesubcontractorProps) => {
         onChange={key => setActiveKey(key)}
         tabBarExtraContent={getTabBarExtraContent()}
       >
-        <Tabs.TabPane key="1" tab={title}>
-          <PaythesubcontractorList type={type} />
+        <Tabs.TabPane key="1" tab={pageTitle}>
+          <PaythesubcontractorList
+            type={type}
+            startDate={startDate ? startDate.format('YYYY-MM-DD') : dayjs().startOf('month').format('YYYY-MM-DD')}
+            endDate={endDate ? endDate.format('YYYY-MM-DD') : dayjs().endOf('month').format('YYYY-MM-DD')}
+            paymentPeriodCode={periodCode}
+            paymentPeriodDetailId={Number.isFinite(paymentPeriodDetailId) ? paymentPeriodDetailId : null}
+          />
         </Tabs.TabPane>
 
-        <Tabs.TabPane key="2" tab={`Danh sách file ${title}`}>
-          {type === Paythesubcontractor.ThanhToan12 && (
-            <ContractsTable
-              tp12={12}
-              policies={{
-                create: ['ListThanhToanThauPhu_12.Create'],
-                delete: ['ListThanhToanThauPhu_12.Delete'],
-              }}
-            />
-          )}
-          {type === Paythesubcontractor.ThanhToan27 && (
-            <ContractsTable
-              tp27={27}
-              policies={{
-                create: ['ListThanhToanThauPhu_27.Create'],
-                delete: ['ListThanhToanThauPhu_27.Delete'],
-              }}
-            />
-          )}
-        </Tabs.TabPane>
+        {type && (
+          <Tabs.TabPane key="2" tab={`Danh sách file ${pageTitle}`}>
+            {type === Paythesubcontractor.ThanhToan12 && (
+              <ContractsTable
+                tp12={12}
+                policies={{
+                  create: ['ListThanhToanThauPhu_12.Create'],
+                  delete: ['ListThanhToanThauPhu_12.Delete'],
+                }}
+              />
+            )}
+            {type === Paythesubcontractor.ThanhToan27 && (
+              <ContractsTable
+                tp27={27}
+                policies={{
+                  create: ['ListThanhToanThauPhu_27.Create'],
+                  delete: ['ListThanhToanThauPhu_27.Delete'],
+                }}
+              />
+            )}
+          </Tabs.TabPane>
+        )}
       </Tabs>
     </div>
   );

@@ -35,6 +35,10 @@ import {
 } from '@/services/AccountingInvoiceService';
 import { EmployeeService } from '@/services/EmployeeService';
 import { ProjectService } from '@/services/ProjectService';
+import {
+  ProjectSubContractorAssignmentService,
+  ProjectSubContractorPaymentResponse,
+} from '@/services/ProjectSubContractorAssignmentService';
 import { accountingInvoiceActions, getDateFilterOptions, getWareHouses } from '@/store/accountingInvoice';
 import { getCurrentCompany } from '@/store/app';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -52,11 +56,11 @@ import {
   buildGhiChu,
   buildMaDoiTuong,
   buildMaKM,
+  buildTkCo,
   buildTkNo,
   CostItem,
   groupItemsByCategoryCode,
   mapPaymentToInvoiceType,
-  mapPaymentToTkCo,
   pushGroup,
   splitByField,
   TPaymentKind,
@@ -65,6 +69,68 @@ import { getSelectedProject } from '@/store/project';
 import { employeeActions, getEmployees, getEmployeeSalariesPays } from '@/store/employee';
 
 dayjs.extend(isBetween);
+
+const getSubContractorDebtKey = (item: ProjectSubContractorPaymentResponse) => String(item.id || item.guid || '');
+
+const extractDebtAmount = (response: any): number => {
+  const preferredKeys = [
+    'congNo',
+    'cong_no',
+    'congNoCuoiKy',
+    'cong_no_cuoi_ky',
+    'soDuCuoiKy',
+    'so_du_cuoi_ky',
+    'duNoCuoiKy',
+    'du_no_cuoi_ky',
+    'duCoCuoiKy',
+    'du_co_cuoi_ky',
+    'du_no_cuoi',
+    'du_co_cuoi',
+    'so_du_no',
+    'so_du_co',
+    'duNo',
+    'du_no',
+    'duCo',
+    'du_co',
+    'closingBalance',
+    'balance',
+    'amount',
+  ];
+  const numbers: number[] = [];
+
+  const visit = (value: any) => {
+    if (!value) return;
+    if (typeof value === 'string') {
+      const trimmed = value.trim();
+      if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+        try {
+          visit(JSON.parse(trimmed));
+        } catch {
+          // Ignore plain text values from report API.
+        }
+      }
+      return;
+    }
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (typeof value !== 'object') return;
+
+    preferredKeys.forEach(key => {
+      const raw = value[key];
+      const num = typeof raw === 'number' ? raw : Number(String(raw ?? '').replace(/[^\d.-]/g, ''));
+      if (Number.isFinite(num) && num !== 0) numbers.push(Math.abs(num));
+    });
+
+    Object.values(value).forEach(child => {
+      if (child && typeof child === 'object') visit(child);
+    });
+  };
+
+  visit(response);
+  return numbers.length ? Math.max(...numbers) : 0;
+};
 
 // ----------------------------------------------------------------
 export const getConfirmLevel = (incidental: IncidentalCostByRangeDate) => {
@@ -134,6 +200,8 @@ export interface IGroupRecord {
   ma_nv_bh?: string;
   ma_kh?: string;
   ncc?: string;
+  tkNo?: string | null;
+  tkCo?: string | null;
   contentCode?: any;
   isSalaryItem?: boolean;
   additionalCostGroupMode?: IncidentalGroupMode;
@@ -167,6 +235,8 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
   const [vatTuChinhItems, setVatTuChinhItems] = useState<CostItem[]>([]);
   const [vatTuPhuItems, setVatTuPhuItems] = useState<CostItem[]>([]);
   const [mayMocItems, setMayMocItems] = useState<CostItem[]>([]);
+  const [approvedSubContractorPayments, setApprovedSubContractorPayments] = useState<ProjectSubContractorPaymentResponse[]>([]);
+  const [subContractorDebtByPaymentId, setSubContractorDebtByPaymentId] = useState<Record<string, number>>({});
   const selectedProject = useAppSelector(getSelectedProject());
   const employees = useAppSelector(getEmployees());
 
@@ -268,6 +338,29 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
 
     return selectMonth.date(paymentDay).format(FormatDateAPI);
   }, [selectMonth, currentPeriod]);
+
+  const subContractorPaymentPeriodCode = useMemo(() => {
+    switch (typeEFinancialPlan) {
+      case EFinancialPlan.KeHoachThanhToan05:
+        return 'Ky1';
+      case EFinancialPlan.KeHoachThanhToan20:
+        return 'Ky3';
+      case EFinancialPlan.KeHoachTamUng12:
+        return 'Ky2';
+      case EFinancialPlan.KeHoachTamUng27:
+        return 'Ky4';
+      default:
+        return '';
+    }
+  }, [typeEFinancialPlan]);
+
+  const selectedMonthRange = useMemo(() => {
+    if (!selectMonth) return null;
+    return {
+      startDate: selectMonth.startOf('month').format(FormatDateAPI),
+      endDate: selectMonth.endOf('month').format(FormatDateAPI),
+    };
+  }, [selectMonth]);
 
   const optsVatTuChinh = useMemo(() => dateRange ? { dateRange, typeEFinancialPlan } : { typeEFinancialPlan }, [dateRange, typeEFinancialPlan]);
   const optsVatTuPhu = useMemo(() => dateRange ? { dateRange, typeEFinancialPlan } : { typeEFinancialPlan }, [dateRange, typeEFinancialPlan]);
@@ -485,6 +578,77 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
   }, [VTPMMDateRange]);
 
   useEffect(() => {
+    if (!subContractorPaymentPeriodCode || !selectedMonthRange) {
+      setApprovedSubContractorPayments([]);
+      return;
+    }
+
+    ProjectSubContractorAssignmentService.Payment.getApprovedForPaymentPlan(
+      subContractorPaymentPeriodCode,
+      selectedMonthRange.startDate,
+      selectedMonthRange.endDate,
+    ).subscribe({
+      next: result => setApprovedSubContractorPayments(Array.isArray(result) ? result : []),
+      error: error => {
+        console.error(error);
+        setApprovedSubContractorPayments([]);
+      },
+    });
+  }, [subContractorPaymentPeriodCode, selectedMonthRange]);
+
+  useEffect(() => {
+    if (!approvedSubContractorPayments.length || !selectedMonthRange) {
+      setSubContractorDebtByPaymentId({});
+      return;
+    }
+
+    let isCancelled = false;
+
+    const loadSubContractorDebt = async () => {
+      const entries = await Promise.all(
+        approvedSubContractorPayments.map(async item => {
+          const key = getSubContractorDebtKey(item);
+          const accountCode = item.tkCo || item.tkNo || '331';
+          const customerCode = item.accountingCustomerCode || item.contractorCode || '';
+
+          if (!key || !accountCode || !customerCode) {
+            return [key, 0] as const;
+          }
+
+          try {
+            const response = await firstValueFrom(
+              AccountingInvoiceService.Post.getBaoCaoChiTietCongNo({
+                ma_tai_khoan: accountCode,
+                tu_ngay: selectedMonthRange.startDate,
+                den_ngay: selectedMonthRange.endDate,
+                madvcs: 'THUCHIEN',
+                ma_cong_trinh: item.projectCode || item.kProjectCode || '',
+                ma_vu_viec: (item as any).workItemCode || (item as any).maVuViec || '',
+                ma_khach_hang: customerCode,
+              }),
+            );
+
+            return [key, extractDebtAmount(response)] as const;
+          } catch (error) {
+            console.error('Failed to fetch subcontractor debt', error);
+            return [key, 0] as const;
+          }
+        }),
+      );
+
+      if (!isCancelled) {
+        setSubContractorDebtByPaymentId(Object.fromEntries(entries.filter(([key]) => key)));
+      }
+    };
+
+    loadSubContractorDebt();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [approvedSubContractorPayments, selectedMonthRange]);
+
+  useEffect(() => {
     const dayWorking = typeEFinancialPlan === EFinancialPlan.KeHoachThanhToan05 ? '20' : '05';
     const workingDay = dayWorking === '20' 
       ? selectMonth?.subtract(1, 'month').date(+dayWorking).format('YYYY-MM-DD')
@@ -639,7 +803,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
         return JSON.stringify(updatedData) !== JSON.stringify(prevData) ? updatedData : prevData;
       });
     }
-  }, [filteredCosts, vatTuPhuItems, vatTuChinhItems, mayMocItems]);
+  }, [filteredCosts, vatTuPhuItems, vatTuChinhItems, mayMocItems, approvedSubContractorPayments, subContractorDebtByPaymentId]);
 
   const romanize = (num: number): string => {
     const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
@@ -757,6 +921,43 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
     );
 
    
+
+    const subContractorItems: CostItem[] = approvedSubContractorPayments.map(item => {
+      const amount = Number(item.currentActualPaymentValue || item.currentRequestedPaymentValue || item.fCurrentPaidValue || 0);
+      const rawDebt = subContractorDebtByPaymentId[getSubContractorDebtKey(item)] || 0;
+      const debt = Math.min(Math.max(rawDebt, 0), amount);
+      const transfer = Math.max(amount - debt, 0);
+      return {
+        guid: item.guid || undefined,
+        id: item.id,
+        name: item.contractorName || item.contractorFullName || item.contractorCode || item.description || 'Thanh toán thầu phụ',
+        money: amount,
+        transfer,
+        total_Expenditure: 0,
+        debt,
+        createDate: item.paymentDate || item.createdDate || paymentTermDate,
+        projectCode: item.projectCode || item.kProjectCode || '',
+        projectName: item.projectCode || '',
+        subContractorCode: item.contractorCode || '',
+        ma_kh: item.accountingCustomerCode || item.contractorCode || '',
+        ncc: item.accountingCustomerCode || item.contractorCode || '',
+        maKM: item.projectCode || item.kProjectCode || '',
+        tkNo: item.tkNo || '',
+        tkCo: item.tkCo || '',
+        contentCode: item.expenseItemCode || item.paymentCatalogCode || item.contractorTypeCode || '',
+        sourceProposal: item,
+      };
+    });
+
+    pushGroup(
+      CategoryCodes.subcontractorAdvance,
+      'Thanh toán thầu phụ',
+      paymentTermDate,
+      subContractorItems,
+      result,
+      getRoman,
+      incGroupIndex,
+    );
 
     const grand = result.reduce(
       (acc, r) => {
@@ -1044,14 +1245,14 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
     setDataSource(addSTT());
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filteredCosts, vatTuPhuItems, vatTuChinhItems, mayMocItems, employeeSalariesPays, incidentalGroupMode]);
+  }, [filteredCosts, vatTuPhuItems, vatTuChinhItems, mayMocItems, employeeSalariesPays, incidentalGroupMode, approvedSubContractorPayments, subContractorDebtByPaymentId]);
 
   const prepareChiTietHachToan = (items: IGroupRecord[], kind: TPaymentKind): ChiTietHachToanDTO[] => {
     return items.map(item => {
       const ma_doi_tuong = buildMaDoiTuong(item);
       const ma_khoan_muc = buildMaKM(item);
       const tk_no = buildTkNo(item);
-      const tk_co = mapPaymentToTkCo(kind);
+      const tk_co = buildTkCo(item, kind);
       const soTien =
         kind === 'cash'
           ? toNumber(item.total_Expenditure)
@@ -1203,6 +1404,23 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
     if (listRequest.length) {
       await firstValueFrom(AccountingInvoiceService.Put.UpdateBeforeAccouttings(listRequest));
     }
+  };
+
+  const persistSubContractorAccountingStatus = async (items: IGroupRecord[]) => {
+    const subContractorRows = items.filter(item => item.categoryCode === CategoryCodes.subcontractorAdvance && item.id);
+    if (!subContractorRows.length) return;
+
+    await Promise.all(
+      subContractorRows.map(item =>
+        firstValueFrom(ProjectSubContractorAssignmentService.Payment.markAccounted(item.id!, {
+          note: 'Da luu hach toan tu ke hoach thanh toan',
+          paidAt: item.paymentTermDate || item.createDate || null,
+          paidCash: toNumber(item.total_Expenditure) ?? 0,
+          paidTransfer: toNumber(item.transfer) ?? 0,
+          paidOther: toNumber(item.debt) ?? 0,
+        })),
+      ),
+    );
   };
 
     const handleSave = async (): Promise<boolean> => {
@@ -1378,6 +1596,7 @@ const PaymentCost = forwardRef<PaymentCostRef, IProps>(function PlanTable(
         await Promise.all([
           persistProposalPaymentValues(raw),
           persistAdditionalCostPaymentValues(raw),
+          persistSubContractorAccountingStatus(raw),
         ]);
       } catch (error) {
         console.error(error);

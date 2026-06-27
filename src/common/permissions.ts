@@ -769,6 +769,11 @@ export const policies = [
         name: 'CongDoan.ChiQuyCD.Delete',
         accessRoles: [RoleEnum.Director, RoleEnum.Deputy_Director],
       },
+      {
+        displayName: 'Duyá»‡t Ä‘á» xuáº¥t chi quá»¹ CÄ',
+        name: 'CongDoan.ChiQuyCD.Approve',
+        accessRoles: [RoleEnum.Director, RoleEnum.Deputy_Director],
+      },
       // Chi phí thưởng lễ tết
       {
         displayName: 'Xem chi tiết thưởng lễ tết',

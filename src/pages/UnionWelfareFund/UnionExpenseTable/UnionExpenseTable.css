@@ -1,0 +1,65 @@
+.union-expense-row-pending > td {
+  background: #fffbe6;
+}
+
+.union-expense-row-approved > td {
+  background: #f6ffed;
+}
+
+.union-expense-row-rejected > td {
+  background: #fff1f0;
+}
+
+.union-expense-row-pending:hover > td,
+.union-expense-row-approved:hover > td,
+.union-expense-row-rejected:hover > td {
+  background: #e6f4ff !important;
+}
+
+.union-expense-fund-summary {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.union-expense-fund-card {
+  min-height: 86px;
+  padding: 14px 16px;
+  border: 1px solid #d9d9d9;
+  border-left-width: 4px;
+  border-radius: 6px;
+  background: #fff;
+}
+
+.union-expense-fund-card .ant-typography {
+  margin: 0;
+}
+
+.union-expense-fund-card-collected {
+  border-left-color: #1677ff;
+}
+
+.union-expense-fund-card-expense {
+  border-left-color: #52c41a;
+}
+
+.union-expense-fund-card-balance {
+  border-left-color: #722ed1;
+}
+
+.union-expense-fund-card-pending {
+  border-left-color: #faad14;
+}
+
+@media (max-width: 1200px) {
+  .union-expense-fund-summary {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .union-expense-fund-summary {
+    grid-template-columns: 1fr;
+  }
+}

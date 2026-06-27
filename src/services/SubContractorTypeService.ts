@@ -1,17 +1,30 @@
 import { Observable } from 'rxjs';
 
-import { getEnvVars } from '@/environment';
 import HttpClient from './HttpClient';
 import { RequestOptions } from './types';
 
-const { apiUrl } = getEnvVars();
+const issueServiceUrl = '/iservice';
 
 export interface SubContractorTypeResponse {
   id: number;
   companyId: number;
   code: string;
   name: string;
+  fullName?: string | null;
   description?: string | null;
+  accountingObjectCode?: string | null;
+  expenseItemCode?: string | null;
+  workItemCode?: string | null;
+  contractCode?: string | null;
+  debitAccount?: string | null;
+  creditAccount?: string | null;
+  debitAccount1?: string | null;
+  creditAccount1?: string | null;
+  debitAccount2?: string | null;
+  creditAccount2?: string | null;
+  debitAccount3?: string | null;
+  creditAccount3?: string | null;
+  note?: string | null;
   sortOrder: number;
   status: number;
 }
@@ -20,7 +33,21 @@ export interface SubContractorTypePayload {
   companyId: number;
   code: string;
   name: string;
+  fullName?: string | null;
   description?: string | null;
+  accountingObjectCode?: string | null;
+  expenseItemCode?: string | null;
+  workItemCode?: string | null;
+  contractCode?: string | null;
+  debitAccount?: string | null;
+  creditAccount?: string | null;
+  debitAccount1?: string | null;
+  creditAccount1?: string | null;
+  debitAccount2?: string | null;
+  creditAccount2?: string | null;
+  debitAccount3?: string | null;
+  creditAccount3?: string | null;
+  note?: string | null;
   sortOrder: number;
   status: number;
 }
@@ -33,7 +60,7 @@ class SubContractorTypeController {
       includeInactive: boolean = false,
       options?: RequestOptions,
     ): Observable<SubContractorTypeResponse[]> =>
-      HttpClient.get(`${apiUrl}/api/SubContractorType`, {
+      HttpClient.get(`${issueServiceUrl}/api/SubContractorType`, {
         ...options,
         search: {
           ...options?.search,
@@ -47,7 +74,7 @@ class SubContractorTypeController {
       companyId: number,
       options?: RequestOptions,
     ): Observable<Blob> =>
-      HttpClient.get(`${apiUrl}/api/SubContractorType/import-template`, {
+      HttpClient.get(`${issueServiceUrl}/api/SubContractorType/import-template`, {
         ...options,
         responseType: 'blob',
         search: {
@@ -62,7 +89,7 @@ class SubContractorTypeController {
       input: SubContractorTypePayload,
       options?: RequestOptions,
     ): Observable<SubContractorTypeResponse> =>
-      HttpClient.post(`${apiUrl}/api/SubContractorType`, input, options),
+      HttpClient.post(`${issueServiceUrl}/api/SubContractorType`, input, options),
   };
 
   public Put = {
@@ -71,12 +98,12 @@ class SubContractorTypeController {
       input: SubContractorTypePayload,
       options?: RequestOptions,
     ): Observable<SubContractorTypeResponse> =>
-      HttpClient.put(`${apiUrl}/api/SubContractorType/${id}`, input, options),
+      HttpClient.put(`${issueServiceUrl}/api/SubContractorType/${id}`, input, options),
   };
 
   public Delete = {
     removeType: (id: number, options?: RequestOptions) =>
-      HttpClient.delete(`${apiUrl}/api/SubContractorType/${id}`, options),
+      HttpClient.delete(`${issueServiceUrl}/api/SubContractorType/${id}`, options),
   };
 }
 
